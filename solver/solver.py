@@ -8,5 +8,5 @@ class Solver(object):
     def solve(self):
         raise NotImplementedError
 
-    def forward(self):
+    def forward(self, input):
         raise NotImplementedError

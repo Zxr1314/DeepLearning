@@ -70,22 +70,24 @@ class Solver2D(Solver):
             tf.summary.scalar(key, value)
         self.train_op = self._train(self.lr)
 
-    def solve(self):
-        saver1 = tf.train.Saver(self.net.pretrained_collection, write_version=1)
-        saver2 = tf.train.Saver(self.net.trainable_collection, write_version=1)
+    def initialize(self):
+        saver = tf.train.Saver(self.net.pretrained_collection, write_version=1)
 
         try:
             init = tf.global_variables_initializer()
         except:
             init = tf.initialize_all_variables()
 
-        summary_op = tf.summary.merge_all()
+        self.sess = tf.Session(config=self.config)
 
-        sess = tf.Session(config=self.config)
-
-        sess.run(init)
+        self.sess.run(init)
         if self.pretrain_path != 'None':
-            saver1.restore(sess, self.pretrain_path)
+            saver.restore(self.sess, self.pretrain_path)
+
+    def solve(self):
+        saver = tf.train.Saver(self.net.trainable_collection, write_version=1)
+
+        summary_op = tf.summary.merge_all()
 
         summary_writer = tf.summary.FileWriter(self.train_dir, sess.graph)
         if self.testing:
@@ -93,7 +95,7 @@ class Solver2D(Solver):
         for step in xrange(self.max_iterators):
             start_time = time.time()
             np_images, np_labels = self.dataset.batch()
-            _, loss, evals = sess.run([self.train_op, self.loss, self.evals], feed_dict={self.images: np_images, self.labels: np_labels, self.lr: self.learning_rate[step]})
+            _, loss, evals = self.sess.run([self.train_op, self.loss, self.evals], feed_dict={self.images: np_images, self.labels: np_labels, self.lr: self.learning_rate[step]})
             duration = time.time()-start_time
             assert not np.isnan(loss), 'Model diverged with loss = NaN'
 
@@ -104,18 +106,31 @@ class Solver2D(Solver):
                                                                                       examples_per_sec, sec_per_batch))
                 print(evals)
                 sys.stdout.flush()
-                summary_str = sess.run(summary_op, feed_dict={self.images: np_images, self.labels: np_labels})
+                summary_str = self.sess.run(summary_op, feed_dict={self.images: np_images, self.labels: np_labels})
                 summary_writer.add_summary(summary_str, step)
             if step % 1000 == 999:
-                saver2.save(sess, self.train_dir + '/model_'+str(step+1).zfill(6)+'.cpkt', global_step=self.global_step)
+                saver.save(self.sess, self.train_dir + '/model_'+str(step+1).zfill(6)+'.cpkt', global_step=self.global_step)
             if self.testing:
                 if step % 100 == 0:
                     for i in xrange(n_batch):
                         t_start_time = time.time()
                         t_images, t_labels = self.dataset.test_batch()
-                        t_loss, t_evals = sess.run([self.loss, self.evals], feed_dict={self.images: t_images, self.labels: t_labels})
+                        t_loss, t_evals = self.sess.run([self.loss, self.evals], feed_dict={self.images: t_images, self.labels: t_labels})
                         t_duration = (time.time()-t_start_time)
                         print('%s: testing %d, loss = %f (%.3f sec/batch)' % (datetime.now(), i, t_loss, t_duration))
                         print(t_evals)
-        sess.close()
+        # self.sess.close()
         return
+
+    def forward(self, input):
+        '''
+        
+        :param input:
+        :return:
+        '''
+        if len(input.shape) == 1:
+            input.shape = [input.shape[0]/self.width/self.height/self.channel, self.width, self.height, self.channel]
+        elif len(input.shape) == 3:
+            input.shape = [input.shape[0]/self.channel, input.shape[1], input.shape[2], self.channel]
+        predict = self.sess.run([self.predicts], feed_dict={self.images: input})
+        return predict
