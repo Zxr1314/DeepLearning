@@ -71,6 +71,8 @@ class FDataSet(DataSet):
             self.test_label_path = dataset_params['test_label_path']
             self.test_data_files = self.__get_files(self.test_data_path)
             self.test_label_files = self.__get_files(self.test_label_path)
+            self.test_data_files.sort()
+            self.test_label_files.sort()
             if not self.bSize:
                 if 'test_size_path' in dataset_params:
                     self.test_size_path = dataset_params['test_size_path']
