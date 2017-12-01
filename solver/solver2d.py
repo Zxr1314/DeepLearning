@@ -124,7 +124,7 @@ class Solver2D(Solver):
 
     def forward(self, input):
         '''
-        
+
         :param input:
         :return:
         '''

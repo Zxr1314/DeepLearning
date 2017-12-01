@@ -51,5 +51,5 @@ solver_params['eval_names'] = eval_names
 dataset = FDataSet(common_params, dataset_params)
 net = Unet2D(common_params, net_params)
 solver = Solver2D(dataset, net, common_params, solver_params)
-
+solver.initialize()
 solver.solve()
