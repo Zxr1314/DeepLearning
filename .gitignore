@@ -1,0 +1,9 @@
+# python
+*.py[cod]
+
+# cpp
+*.o
+*.so
+
+# self
+models/*
