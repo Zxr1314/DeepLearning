@@ -63,7 +63,7 @@ dataset = FDataSet(common_params, dataset_params)
 net = Unet2D(common_params, net_params)
 solver = Solver2D(dataset, net, common_params, solver_params)
 solver.initialize()
-#solver.solve()
+solver.solve()
 test_file(solver, '/media/E/Documents/VesselData/TrainData/0005/oridata.dat',
           '/media/E/Documents/VesselData/TrainLabel/0005/unet_76000.dat')
 test_file(solver, '/media/E/Documents/VesselData/TrainData/0015/oridata.dat',
