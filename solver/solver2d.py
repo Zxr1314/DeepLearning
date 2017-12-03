@@ -58,8 +58,8 @@ class Solver2D(Solver):
 
     def construct_graph(self):
         self.global_step = tf.Variable(0, trainable=False)
-        self.images = tf.placeholder(tf.float32, [self.batch_size, self.height, self.width, self.channel])
-        self.labels = tf.placeholder(tf.float32, [self.batch_size, self.height, self.width, self.channel])
+        self.images = tf.placeholder(tf.float32, [None, self.height, self.width, self.channel])
+        self.labels = tf.placeholder(tf.float32, [None, self.height, self.width, self.channel])
         self.lr = tf.placeholder(tf.float32)
 
         self.predicts = self.net.inference(self.images)
@@ -129,8 +129,14 @@ class Solver2D(Solver):
         :return:
         '''
         if len(input.shape) == 1:
-            input.shape = [input.shape[0]/self.width/self.height/self.channel, self.width, self.height, self.channel]
+            input.shape = [int(input.shape[0]/self.width/self.height/self.channel), self.width, self.height, self.channel]
         elif len(input.shape) == 3:
-            input.shape = [input.shape[0]/self.channel, input.shape[1], input.shape[2], self.channel]
-        predict = self.sess.run([self.predicts], feed_dict={self.images: input})
+            input.shape = [int(input.shape[0]/self.channel), input.shape[1], input.shape[2], self.channel]
+        i = 0
+        predict = np.zeros(input.shape)
+        while i < input.shape[0]:
+            images = input[i:i+self.batch_size,:,:,:]
+            predict_temp = self.sess.run([self.predicts], feed_dict={self.images: images})
+            predict[i:i+self.batch_size,:,:,:] = predict_temp[0]
+            i += self.batch_size
         return predict

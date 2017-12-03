@@ -110,7 +110,7 @@ class FDataSet(DataSet):
             if self.bSize:
                 data, label, self.i_batch = self.__sequential_batch(self.i_batch, self.n_batch, self.data_files_batch, self.label_files_batch)
             else:
-                data, label, self.i_batch = self.__sequential_batch(self.i_batch, self.n_batch, self.data_files, self.label_files, self.size_files)
+                data, label, self.i_batch = self.__sequential_batch(self.i_batch, self.n_batch, self.batch_size, self.data_files, self.label_files, self.size_files)
         return data, label
 
     def test_batch(self):
@@ -119,9 +119,9 @@ class FDataSet(DataSet):
         :return:
         '''
         if self.bSize:
-            tdata, tlabel, self.test_i_batch = self.__sequential_batch(self.test_i_batch, self.test_n_batch, self.test_data_files_batch, self.test_label_files_batch)
+            tdata, tlabel, self.test_i_batch = self.__sequential_batch(self.test_i_batch, self.test_n_batch, self.test_batch_size, self.test_data_files_batch, self.test_label_files_batch)
         else:
-            tdata, tlabel, self.test_i_batch = self.__sequential_batch(self.test_i_batch, self.test_n_batch, self.test_data_files,
+            tdata, tlabel, self.test_i_batch = self.__sequential_batch(self.test_i_batch, self.test_n_batch, self.test_batch_size, self.test_data_files,
                                                     self.test_label_files, self.test_size_files)
         return tdata, tlabel
 
@@ -169,7 +169,7 @@ class FDataSet(DataSet):
                 label[i,:] = l
         return data, label
 
-    def __sequential_batch(self, i_batch, n_batch, data_files_batch, label_files_batch, size_files_batch=None):
+    def __sequential_batch(self, i_batch, n_batch, batch_size, data_files_batch, label_files_batch, size_files_batch=None):
         '''
 
         :return:
@@ -187,12 +187,12 @@ class FDataSet(DataSet):
                 label.shape = [1, size[0], size[1], size[2], 1]
         else:
             if self.dimension==2:
-                data = np.zeros([self.batch_size, self.height, self.width, self.channel], dtype=np.float32)
-                label = np.zeros([self.batch_size, self.height, self.width, 1], dtype=np.float32)
+                data = np.zeros([batch_size, self.height, self.width, self.channel], dtype=np.float32)
+                label = np.zeros([batch_size, self.height, self.width, 1], dtype=np.float32)
             else:
-                data = np.zeros([self.batch_size, self.depth, self.height, self.width, self.channel], dtype=np.float32)
-                label = np.zeros([self.batch_size, self.depth, self.height, self.width, 1], dtype=np.float32)
-            for i in xrange(self.batch_size):
+                data = np.zeros([batch_size, self.depth, self.height, self.width, self.channel], dtype=np.float32)
+                label = np.zeros([batch_size, self.depth, self.height, self.width, 1], dtype=np.float32)
+            for i in xrange(batch_size):
                 d = np.fromfile(data_files_batch[i_batch][i], dtype=self.dtype).astype(np.float32)
                 l = np.fromfile(label_files_batch[i_batch][i], dtype=self.dtype).astype(np.float32)
                 if self.dimension==2:
