@@ -89,7 +89,7 @@ class Solver2D(Solver):
 
         summary_op = tf.summary.merge_all()
 
-        summary_writer = tf.summary.FileWriter(self.train_dir, sess.graph)
+        summary_writer = tf.summary.FileWriter(self.train_dir, self.sess.graph)
         if self.testing:
             n_batch = self.dataset.get_n_test_batch()
         for step in xrange(self.max_iterators):
