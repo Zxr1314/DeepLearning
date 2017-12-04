@@ -77,9 +77,9 @@ class Plot(object):
             plt_name = 'f1_plt'
         else:
             plt_name = 'loss_plt'
-        str = format("self.%s.scatter(iter, value, s=self.test_size, c=self.test_color, marker=self.test_marker"%plt_name)
+        str = format("self.%s.scatter(iter, value, s=self.test_size, c=self.test_color, marker=self.test_marker)"%plt_name)
         eval(str);
-        plt.sleep(0.1)
+        plt.pause(0.1)
         return
 
     def save_fig(self):
