@@ -49,3 +49,5 @@ class GANSolver2D(Solver2D):
         summary_writer = tf.summary.FileWriter(self.train_dir, self.sess.graph)
         if self.testing:
             n_batch = self.dataset.get_n_test_batch()
+        for step in xrange(self.max_iterators):
+            for i in xrange(self.d_iterations):

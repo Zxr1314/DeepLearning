@@ -139,7 +139,7 @@ class Unet2D(Net):
 
     def loss(self, predicts, labels, eval_names):
         weight = labels*self.wtrue+self.wfalse
-        loss = tf.losses.mean_squared_error(labels, predicts, weights=weight)
+        loss = tf.losses.absolute_difference(labels, predicts, weights=weight)
         evals = {}
         if eval_names is not None:
             seg = tf.round(predicts)
@@ -289,7 +289,7 @@ class UnetLReLU2D(Net):
 
     def loss(self, predicts, labels, eval_names):
         weight = labels*self.wtrue+self.wfalse
-        loss = tf.losses.mean_squared_error(labels, predicts, weights=weight)
+        loss = tf.losses.absolute_difference(labels, predicts, weights=weight)
         evals = {}
         if eval_names is not None:
             seg = tf.round(predicts)
@@ -439,7 +439,7 @@ class UnetSeLU2D(Net):
 
     def loss(self, predicts, labels, eval_names):
         weight = labels*self.wtrue+self.wfalse
-        loss = tf.losses.mean_squared_error(labels, predicts, weights=weight)
+        loss = tf.losses.absolute_difference(labels, predicts, weights=weight)
         evals = {}
         if eval_names is not None:
             seg = tf.round(predicts)
@@ -589,7 +589,7 @@ class UnetSwish2D(Net):
 
     def loss(self, predicts, labels, eval_names):
         weight = labels*self.wtrue+self.wfalse
-        loss = tf.losses.mean_squared_error(labels, predicts, weights=weight)
+        loss = tf.losses.absolute_difference(labels, predicts, weights=weight)
         evals = {}
         if eval_names is not None:
             seg = tf.round(predicts)
