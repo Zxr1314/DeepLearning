@@ -39,3 +39,13 @@ class GANSolver2D(Solver2D):
         for key, value in self.evals.items():
             tf.summary.scalar(key, value)
         self.train_d, self.train_g = self._train(self.lr)
+        return
+
+    def solve(self):
+        saver = tf.train.Saver(self.net.trainable_collection, write_version=1)
+
+        summary_op = tf.summary.merge_all()
+
+        summary_writer = tf.summary.FileWriter(self.train_dir, self.sess.graph)
+        if self.testing:
+            n_batch = self.dataset.get_n_test_batch()

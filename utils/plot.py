@@ -35,4 +35,54 @@ class Plot(object):
             self.test_color = plot_params['test_color']
         else:
             self.test_color = 'r'
-        plt.scatter()
+        self.save_name = plot_params['save_name']
+        self.interactive = plot_params['interactive']
+        self.figure = plt.figure()
+        self.loss_plt = self.figure.add_subplot(221)
+        self.loss_plt.axis([0, self.max_iterations, 0, 0.5])
+        self.loss_plt.set_title('loss')
+        self.pre_plt = self.figure.add_subplot(222)
+        self.pre_plt.axis([0, self.max_iterations, 0, 1])
+        self.pre_plt.set_title('precision')
+        self.rec_plt = self.figure.add_subplot(223)
+        self.rec_plt.axis([0, self.max_iterations, 0, 1])
+        self.rec_plt.set_title('recall')
+        self.f1_plt = self.figure.add_subplot(224)
+        self.f1_plt.axis([0, self.max_iterations, 0, 1])
+        self.f1_plt.set_title('f1')
+        if self.interactive:
+            self.figure.show()
+        return
+
+    def plot_train(self, iter, value, type):
+        if type==1:
+            plt_name = 'pre_plt'
+        elif type==2:
+            plt_name = 'rec_plt'
+        elif type==3:
+            plt_name = 'f1_plt'
+        else:
+            plt_name = 'loss_plt'
+        str = format("self.%s.scatter(iter, value, s=self.train_size, c=self.train_color, marker=self.train_marker)"%plt_name)
+        eval(str);
+        plt.pause(0.1)
+        return
+
+    def plot_test(self, iter, value, type):
+        if type==1:
+            plt_name = 'pre_plt'
+        elif type==2:
+            plt_name = 'rec_plt'
+        elif type==3:
+            plt_name = 'f1_plt'
+        else:
+            plt_name = 'loss_plt'
+        str = format("self.%s.scatter(iter, value, s=self.test_size, c=self.test_color, marker=self.test_marker"%plt_name)
+        eval(str);
+        plt.sleep(0.1)
+        return
+
+    def save_fig(self):
+        self.figure.savefig(self.save_name)
+        return
+

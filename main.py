@@ -42,10 +42,10 @@ net_params['weight_false'] = 2
 
 solver_params = {}
 solver_params['train_dir'] = 'models'
-solver_params['pretrain_model_path'] = 'models/model_076000.cpkt-76000'
-solver_params['max_iterators'] = 100000
-learning_rate = np.zeros(100000, dtype=np.float32)
-learning_rate[0:10000] = 0.003
+#solver_params['pretrain_model_path'] = 'models/model_076000.cpkt-76000'
+solver_params['max_iterators'] = 10000
+learning_rate = np.zeros(10000, dtype=np.float32)
+learning_rate[0:10000] = 0.001
 learning_rate[10000:40000] = 0.001
 learning_rate[40000:70000] = 0.0005
 learning_rate[70000:100000] = 0.0001
@@ -58,17 +58,23 @@ eval_names.append('precision')
 eval_names.append('recall')
 eval_names.append('f1')
 solver_params['eval_names'] = eval_names
+plot_params = {}
+plot_params['max_iterations'] = solver_params['max_iterators']
+plot_params['save_name'] = 'output/relu.png'
+plot_params['interactive'] = True
+solver_params['plot'] = True
+solver_params['plot_params'] = plot_params
 
 dataset = FDataSet(common_params, dataset_params)
 net = Unet2D(common_params, net_params)
 solver = Solver2D(dataset, net, common_params, solver_params)
 solver.initialize()
 solver.solve()
-test_file(solver, '/media/E/Documents/VesselData/TrainData/0005/oridata.dat',
+'''test_file(solver, '/media/E/Documents/VesselData/TrainData/0005/oridata.dat',
           '/media/E/Documents/VesselData/TrainLabel/0005/unet_76000.dat')
 test_file(solver, '/media/E/Documents/VesselData/TrainData/0015/oridata.dat',
           '/media/E/Documents/VesselData/TrainLabel/0015/unet_76000.dat')
 test_file(solver, '/media/E/Documents/VesselData/TrainData/0115/oridata.dat',
           '/media/E/Documents/VesselData/TrainLabel/0115/unet_76000.dat')
 test_file(solver, '/media/E/Documents/VesselData/TrainData/0322/oridata.dat',
-          '/media/E/Documents/VesselData/TrainLabel/0322/unet_76000.dat')
+          '/media/E/Documents/VesselData/TrainLabel/0322/unet_76000.dat')'''

@@ -5,6 +5,7 @@ from __future__ import division
 from __future__ import print_function
 
 import re
+import math
 
 import tensorflow as tf
 import numpy as np
@@ -49,7 +50,7 @@ class Net(object):
         :param train:
         :return: Variable Tensor
         '''
-        var = self._variable_on_cpu(name, shape, tf.truncated_normal_initializer(stddev=stddev, dtype=tf.float32),
+        var = self._variable_on_cpu(name, shape, tf.random_normal_initializer(stddev=stddev, dtype=tf.float32),
                                     pretrain=pretrain, train=train)
         if wd is not None:
             weight_decay = tf.multiply(tf.nn.l2_loss(var), wd, name='weight_loss')
@@ -68,8 +69,9 @@ class Net(object):
         :return: 4-D tensor
         '''
         with tf.name_scope(scope):
+            s = float(kernel_size[0]*kernel_size[1])
             kernel = self._variable_with_weight_decay(scope+'_weights', shape=kernel_size,
-                                                      stddev=1.0, wd=1.0,
+                                                      stddev=1.0/math.sqrt(s), wd=1.0,
                                                       pretrain=pretrain, train=train)
             conv = tf.nn.conv2d(input, kernel, strides=stride, padding=padding)
             bn = tf.contrib.layers.batch_norm(conv, decay=0.999, epsilon=1e-3, is_training=True)
@@ -90,7 +92,8 @@ class Net(object):
         :return:
         '''
         with tf.name_scope(scope):
-            kernel = self._variable_on_cpu(scope+'_weights', kernel_size, tf.truncated_normal_initializer(stddev=1.0, dtype=tf.float32),
+            s = float(kernel_size[0] * kernel_size[1])
+            kernel = self._variable_on_cpu(scope+'_weights', kernel_size, tf.random_normal_initializer(stddev=1.0/math.sqrt(s), dtype=tf.float32),
                                            pretrain=pretrain, train=train)
             conv = tf.nn.conv2d_transpose(input, kernel, target, stride, name='deconv')
             biases = self._variable_on_cpu(scope+'_biases', kernel_size[2], tf.constant_initializer(0.0), pretrain, train)
@@ -164,6 +167,32 @@ class Net(object):
             p = self._variable_on_cpu('p', 1, tf.constant_initializer(0.1), pretrain, train)
             mask = tf.cast((input>0), dtype=tf.float32)
             out = mask*input + p*(1-mask)*input
+        return out
+
+    def selu(self, input, name=None):
+        '''
+
+        :param input:
+        :param pretrain:
+        :param train:
+        :param name:
+        :return:
+        '''
+        with tf.name_scope(name):
+            alpha = 1.6732632423543772848170429916717
+            scale = 1.0507009873554804934193349852946
+            out = scale * tf.where(input > 0.0, input, alpha * tf.nn.elu(input))
+        return out
+
+    def swish(self, input, name):
+        '''
+
+        :param input:
+        :param name:
+        :return:
+        '''
+        with tf.name_scope(name):
+            out = input*tf.nn.sigmoid(input)
         return out
 
     def inference(self, images):

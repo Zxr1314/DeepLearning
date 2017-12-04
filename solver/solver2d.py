@@ -11,6 +11,7 @@ import tensorflow as tf
 import numpy as np
 
 from solver.solver import Solver
+from utils.plot import Plot
 
 class Solver2D(Solver):
     '''2-D model solver
@@ -46,6 +47,10 @@ class Solver2D(Solver):
         self.config.gpu_options.allow_growth = True
 
         self.construct_graph()
+
+        self.do_plot = solver_params['plot']
+        if self.do_plot:
+            self.plot = Plot(solver_params['plot_params'])
         return
 
     def _train(self, lr):
@@ -108,10 +113,22 @@ class Solver2D(Solver):
                 sys.stdout.flush()
                 summary_str = self.sess.run(summary_op, feed_dict={self.images: np_images, self.labels: np_labels})
                 summary_writer.add_summary(summary_str, step)
+                if self.do_plot:
+                    self.plot.plot_train(step, loss, 0)
+                    if 'precision' in self.eval_names:
+                        self.plot.plot_train(step, evals['precision'], 1)
+                    if 'recall' in self.eval_names:
+                        self.plot.plot_train(step, evals['recall'], 2)
+                    if 'f1' in self.eval_names:
+                        self.plot.plot_train(step, evals['f1'], 3)
             if step % 1000 == 999:
                 saver.save(self.sess, self.train_dir + '/model_'+str(step+1).zfill(6)+'.cpkt', global_step=self.global_step)
             if self.testing:
-                if step % 100 == 0:
+                if (step % 100 == 0)&(step != 0):
+                    temp_eval = {}
+                    for name in self.eval_names:
+                        temp_eval[name] = 0.0
+                    temp_eval['loss'] = 0.0
                     for i in xrange(n_batch):
                         t_start_time = time.time()
                         t_images, t_labels = self.dataset.test_batch()
@@ -119,7 +136,24 @@ class Solver2D(Solver):
                         t_duration = (time.time()-t_start_time)
                         print('%s: testing %d, loss = %f (%.3f sec/batch)' % (datetime.now(), i, t_loss, t_duration))
                         print(t_evals)
+                        temp_eval['loss'] += t_loss
+                        for name in self.eval_names:
+                            temp_eval[name] += t_evals[name]
+                    for key,value in temp_eval.items():
+                        temp_eval[key] /= float(n_batch)
+                    print('testing finished.')
+                    print(temp_eval)
+                    if self.do_plot:
+                        self.plot.plot_test(step, temp_eval['loss'], 0)
+                        if 'precision' in temp_eval:
+                            self.plot.plot_test(step, temp_eval['precision'], 1)
+                        if 'recall' in temp_eval:
+                            self.plot.plot_test(step, temp_eval['recall'], 2)
+                        if 'f1' in temp_eval:
+                            self.plot.plot_test(step, temp_eval['f1'], 3)
         # self.sess.close()
+        if self.do_plot:
+            self.plot.save_fig()
         return
 
     def forward(self, input):

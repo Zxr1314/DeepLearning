@@ -192,7 +192,7 @@ class FDataSet(DataSet):
             else:
                 data = np.zeros([batch_size, self.depth, self.height, self.width, self.channel], dtype=np.float32)
                 label = np.zeros([batch_size, self.depth, self.height, self.width, 1], dtype=np.float32)
-            for i in xrange(data_files_batch[i_batch]):
+            for i in xrange(len(data_files_batch[i_batch])):
                 d = np.fromfile(data_files_batch[i_batch][i], dtype=self.dtype).astype(np.float32)
                 l = np.fromfile(label_files_batch[i_batch][i], dtype=self.dtype).astype(np.float32)
                 if self.dimension==2:
