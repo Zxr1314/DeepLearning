@@ -3,6 +3,8 @@ ploting class
 not finished
 '''
 
+import matplotlib as mpl
+mpl.use('Agg')
 import matplotlib.pyplot as plt
 
 class Plot(object):
@@ -37,7 +39,7 @@ class Plot(object):
             self.test_color = 'r'
         self.save_name = plot_params['save_name']
         self.interactive = plot_params['interactive']
-        self.figure = plt.figure(figsize=(18.5,10.5))
+        self.figure = mpl.pyplot.figure(figsize=(18.5,10.5))
         self.loss_plt = self.figure.add_subplot(221)
         self.loss_plt.axis([0, self.max_iterations, 0, 0.5])
         self.loss_plt.set_title('loss')
