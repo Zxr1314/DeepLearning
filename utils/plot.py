@@ -37,7 +37,7 @@ class Plot(object):
             self.test_color = 'r'
         self.save_name = plot_params['save_name']
         self.interactive = plot_params['interactive']
-        self.figure = plt.figure()
+        self.figure = plt.figure(figsize=(18.5,10.5))
         self.loss_plt = self.figure.add_subplot(221)
         self.loss_plt.axis([0, self.max_iterations, 0, 0.5])
         self.loss_plt.set_title('loss')

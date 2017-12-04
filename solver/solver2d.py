@@ -36,6 +36,7 @@ class Solver2D(Solver):
             self.pretrain_path = str(solver_params['pretrain_model_path'])
         else:
             self.pretrain_path = 'None'
+        self.model_name = solver_params['model_name']
         self.train_dir = str(solver_params['train_dir'])
         self.max_iterators = int(solver_params['max_iterators'])
         self.eval_names = solver_params['eval_names']
@@ -122,9 +123,9 @@ class Solver2D(Solver):
                     if 'f1' in self.eval_names:
                         self.plot.plot_train(step, evals['f1'], 3)
             if step % 1000 == 999:
-                saver.save(self.sess, self.train_dir + '/model_'+str(step+1).zfill(6)+'.cpkt', global_step=self.global_step)
+                saver.save(self.sess, self.train_dir + '/' + self.model_name + '.cpkt', global_step=self.global_step)
             if self.testing:
-                if (step % 100 == 0)&(step != 0):
+                if (step % 500 == 0)&(step != 0):
                     temp_eval = {}
                     for name in self.eval_names:
                         temp_eval[name] = 0.0

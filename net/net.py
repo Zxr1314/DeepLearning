@@ -141,7 +141,7 @@ class Net(object):
             bias = tf.nn.bias_add(conv, biases)
         return bias
 
-    def leaky_relu(self, input, alpha, name=None):
+    def leaky_relu(self, input, alpha=0.2, name=None):
         '''
 
         :param input:
@@ -150,8 +150,7 @@ class Net(object):
         :return:
         '''
         with tf.name_scope(name):
-            mask = tf.cast((input>0), dtype=tf.float32)
-            out = mask*input + alpha*(1-mask)*input
+            out = tf.where(input > 0.0, input, alpha * input)
         return out
 
     def prelu(self, input, pretrain=True, train=True, name=None):
