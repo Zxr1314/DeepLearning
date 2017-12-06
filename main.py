@@ -21,8 +21,8 @@ def test_file(solve, file_name, save_name):
     return predict
 
 common_params = {}
-common_params['batch_size'] = 1
-common_params['test_batch_size'] = 2
+common_params['batch_size'] = 2
+common_params['test_batch_size'] = 4
 common_params['dimension'] = 2
 common_params['width'] = 512
 common_params['height'] = 512
@@ -49,8 +49,8 @@ solver_params['train_dir'] = 'models'
 #solver_params['model_name'] = 'selu'
 solver_params['model_name'] = 'swish'
 #solver_params['pretrain_model_path'] = 'models/model_076000.cpkt-76000'
-solver_params['max_iterators'] = 10000
-learning_rate = np.zeros(10000, dtype=np.float32)
+solver_params['max_iterators'] = 100000
+learning_rate = np.zeros(100000, dtype=np.float32)
 learning_rate[0:10000] = 0.001
 learning_rate[10000:40000] = 0.001
 learning_rate[40000:70000] = 0.0005
@@ -69,10 +69,11 @@ plot_params['max_iterations'] = solver_params['max_iterators']
 #plot_params['save_name'] = 'output/relu.png'
 #plot_params['save_name'] = 'output/lrelu.png'
 #plot_params['save_name'] = 'output/selu.png'
-plot_params['save_name'] = 'output/swish.png'
+plot_params['save_name'] = 'output/pspnet2.png'
 plot_params['interactive'] = True
 solver_params['plot'] = True
 solver_params['plot_params'] = plot_params
+solver_params['keep_prob'] = 0.9
 
 dataset = FDataSet(common_params, dataset_params)
 #net = Unet2D(common_params, net_params)

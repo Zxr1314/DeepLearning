@@ -196,7 +196,7 @@ class Net(object):
             out = input*tf.nn.sigmoid(input)
         return out
 
-    def inference(self, images):
+    def inference(self, images, **kwargs):
         '''
         Definition of the network
         :param images: 4-D or 5-D tensor depending on image dimension

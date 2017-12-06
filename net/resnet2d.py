@@ -74,7 +74,7 @@ class ResNet2D(Net):
             added = tf.add(block_1, block_2, name=name+'_add')
         return added
 
-    def inference(self, images):
+    def inference(self, images, **kwargs):
         input_channel = int(images.get_shape()[3])
         conv1 = self.conv2d('conv1', images, [3,3,input_channel,64], stride=[1,2,2,1], use_bias=False)
         relu1 = tf.nn.relu(conv1, name='relu1')

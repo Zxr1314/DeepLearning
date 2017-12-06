@@ -181,7 +181,7 @@ class UnetLReLU2D(Net):
 
         return
 
-    def inference(self, images):
+    def inference(self, images, **kwargs):
         '''
 
         :param images:

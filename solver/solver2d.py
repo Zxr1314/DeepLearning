@@ -40,6 +40,10 @@ class Solver2D(Solver):
         self.train_dir = str(solver_params['train_dir'])
         self.max_iterators = int(solver_params['max_iterators'])
         self.eval_names = solver_params['eval_names']
+        if 'keep_prob' in solver_params:
+            self.keep_prob = solver_params['keep_prob']
+        else:
+            self.keep_prob = 1.0
 
         self.dataset = dataset
         self.net = net
@@ -67,8 +71,9 @@ class Solver2D(Solver):
         self.images = tf.placeholder(tf.float32, [None, self.height, self.width, self.channel])
         self.labels = tf.placeholder(tf.float32, [None, self.height, self.width, self.channel])
         self.lr = tf.placeholder(tf.float32)
+        self.keep_prob_holder = tf.placeholder(tf.float32)
 
-        self.predicts = self.net.inference(self.images)
+        self.predicts = self.net.inference(self.images, keep_prob=self.keep_prob_holder)
         self.loss, self.evals = self.net.loss(self.predicts, self.labels, self.eval_names)
 
         tf.summary.scalar('loss', self.loss)
@@ -101,7 +106,7 @@ class Solver2D(Solver):
         for step in xrange(self.max_iterators):
             start_time = time.time()
             np_images, np_labels = self.dataset.batch()
-            _, loss, evals = self.sess.run([self.train_op, self.loss, self.evals], feed_dict={self.images: np_images, self.labels: np_labels, self.lr: self.learning_rate[step]})
+            _, loss, evals = self.sess.run([self.train_op, self.loss, self.evals], feed_dict={self.images: np_images, self.labels: np_labels, self.lr: self.learning_rate[step], self.keep_prob_holder: self.keep_prob})
             duration = time.time()-start_time
             assert not np.isnan(loss), 'Model diverged with loss = NaN'
 
@@ -112,7 +117,7 @@ class Solver2D(Solver):
                                                                                       examples_per_sec, sec_per_batch))
                 print(evals)
                 sys.stdout.flush()
-                summary_str = self.sess.run(summary_op, feed_dict={self.images: np_images, self.labels: np_labels})
+                summary_str = self.sess.run(summary_op, feed_dict={self.images: np_images, self.labels: np_labels, self.keep_prob_holder: self.keep_prob})
                 summary_writer.add_summary(summary_str, step)
                 if self.do_plot:
                     self.plot.plot_train(step, loss, 0)
@@ -135,7 +140,7 @@ class Solver2D(Solver):
                     for i in xrange(n_batch):
                         t_start_time = time.time()
                         t_images, t_labels = self.dataset.test_batch()
-                        t_loss, t_evals = self.sess.run([self.loss, self.evals], feed_dict={self.images: t_images, self.labels: t_labels})
+                        t_loss, t_evals = self.sess.run([self.loss, self.evals], feed_dict={self.images: t_images, self.labels: t_labels, self.keep_prob: 1.0})
                         t_duration = (time.time()-t_start_time)
                         print('%s: testing %d, loss = %f (%.3f sec/batch)' % (datetime.now(), i, t_loss, t_duration))
                         print(t_evals)
@@ -173,7 +178,7 @@ class Solver2D(Solver):
         predict = np.zeros(input.shape)
         while i < input.shape[0]:
             images = input[i:i+self.batch_size,:,:,:]
-            predict_temp = self.sess.run([self.predicts], feed_dict={self.images: images})
+            predict_temp = self.sess.run([self.predicts], feed_dict={self.images: images, self.keep_prob: 1.0})
             predict[i:i+self.batch_size,:,:,:] = predict_temp[0]
             i += self.batch_size
         return predict

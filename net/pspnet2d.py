@@ -55,7 +55,7 @@ class PSPnet2D(Net):
             res = tf.concat_v2([input, interp_block1, interp_block2, interp_block3, interp_block6], axis=3, name='concat')
         return res
 
-    def inference(self, images):
+    def inference(self, images, **kwargs):
         shape = tf.shape(images)
         res = self.resnet.inference(images)
         input_shape = res.get_shape()[1:3]
@@ -63,7 +63,9 @@ class PSPnet2D(Net):
         input_channel = int(psp.get_shape()[3])
         x = self.conv2d('conv5_4', psp, [3,3,input_channel,512], use_bias=False)
         x = tf.nn.relu(x)
-        x = tf.nn.dropout(x, 0.1)
+        if 'keep_prob' not in kwargs:
+            raise Exception("Keep_prob for dropout layer not given!")
+        x = tf.nn.dropout(x, kwargs['keep_prob'])
         x = tf.image.resize_images(x, [self.height, self.width])
         x = self.conv2d('conv6', x, [1,1,512,1])
         #x = self.conv2d_transpose('conv6', x, shape, [8,8,1,512])
