@@ -7,6 +7,7 @@ import numpy as np
 
 from dataset.fdataset import FDataSet
 from net.unet2d import *
+from net.pspnet2d import *
 from solver.solver2d import Solver2D
 
 def test_file(solve, file_name, save_name):
@@ -20,8 +21,8 @@ def test_file(solve, file_name, save_name):
     return predict
 
 common_params = {}
-common_params['batch_size'] = 2
-common_params['test_batch_size'] = 4
+common_params['batch_size'] = 1
+common_params['test_batch_size'] = 2
 common_params['dimension'] = 2
 common_params['width'] = 512
 common_params['height'] = 512
@@ -39,6 +40,7 @@ dataset_params['test_label_path'] = '/media/E/Documents/VesselData/TrainLabel/te
 net_params = {}
 net_params['weight_true'] = 4
 net_params['weight_false'] = 2
+net_params['layers'] = 50
 
 solver_params = {}
 solver_params['train_dir'] = 'models'
@@ -76,7 +78,7 @@ dataset = FDataSet(common_params, dataset_params)
 #net = Unet2D(common_params, net_params)
 #net = UnetLReLU2D(common_params, net_params)
 #net = UnetSeLU2D(common_params, net_params)
-net = UnetSwish2D(common_params, net_params)
+net = PSPnet2D(common_params, net_params)
 solver = Solver2D(dataset, net, common_params, solver_params)
 solver.initialize()
 solver.solve()

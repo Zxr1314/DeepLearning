@@ -57,7 +57,7 @@ class Net(object):
             tf.add_to_collection('losses', weight_decay)
         return var
 
-    def conv2d(self, scope, input, kernel_size, stride=[1,1,1,1], padding='SAME', pretrain=True, train=True):
+    def conv2d(self, scope, input, kernel_size, stride=[1,1,1,1], padding='SAME', pretrain=True, train=True, use_bias=True):
         '''2-D convulution layer
 
         :param scope: scope name
@@ -74,12 +74,13 @@ class Net(object):
                                                       stddev=1.0/math.sqrt(s), wd=1.0,
                                                       pretrain=pretrain, train=train)
             conv = tf.nn.conv2d(input, kernel, strides=stride, padding=padding)
+            if use_bias:
+                biases = self._variable_on_cpu(scope+'_biases', kernel_size[3:], tf.constant_initializer(0.0), pretrain, train)
+                conv = tf.nn.bias_add(conv, biases)
             bn = tf.contrib.layers.batch_norm(conv, decay=0.999, epsilon=1e-3, is_training=True)
-            biases = self._variable_on_cpu(scope+'_biases', kernel_size[3:], tf.constant_initializer(0.0), pretrain, train)
-            bias = tf.nn.bias_add(bn, biases)
-        return bias
+        return bn
 
-    def conv2d_transpose(self, scope, input, target, kernel_size, stride=[1,1,1,1], pretrain=True, train=True):
+    def conv2d_transpose(self, scope, input, target, kernel_size, stride=[1,1,1,1], pretrain=True, train=True, use_bias=True):
         '''
 
         :param scope:
@@ -96,9 +97,10 @@ class Net(object):
             kernel = self._variable_on_cpu(scope+'_weights', kernel_size, tf.random_normal_initializer(stddev=1.0/math.sqrt(s), dtype=tf.float32),
                                            pretrain=pretrain, train=train)
             conv = tf.nn.conv2d_transpose(input, kernel, target, stride, name='deconv')
-            biases = self._variable_on_cpu(scope+'_biases', kernel_size[2], tf.constant_initializer(0.0), pretrain, train)
-            bias = tf.nn.bias_add(conv, biases)
-        return bias
+            if use_bias:
+                biases = self._variable_on_cpu(scope+'_biases', kernel_size[2], tf.constant_initializer(0.0), pretrain, train)
+                conv = tf.nn.bias_add(conv, biases)
+        return conv
 
     def conv3d(self, scope, input, kernel_size, stride=[1,1,1,1,1], padding='SAME', pretrain=True, train=True):
         '''3-D convulution layer
