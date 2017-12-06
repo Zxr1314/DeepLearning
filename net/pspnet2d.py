@@ -48,11 +48,11 @@ class PSPnet2D(Net):
         interp_block3 = self.interp_block(input, 2, feature_map_size, str_lvl=3, name='interp_block3')
         interp_block6 = self.interp_block(input, 1, feature_map_size, str_lvl=6, name='interp_block6')
 
-        res = tf.concat([input, interp_block1, interp_block2, interp_block3, interp_block6], axis=3, name='concat')
-        '''try:
+        #res = tf.concat([input, interp_block1, interp_block2, interp_block3, interp_block6], axis=3, name='concat')
+        try:
             res = tf.concat([input, interp_block1, interp_block2, interp_block3, interp_block6], axis=3, name='concat')
         except:
-            res = tf.concat_v2([input, interp_block1, interp_block2, interp_block3, interp_block6], axis=3, name='concat')'''
+            res = tf.concat_v2([input, interp_block1, interp_block2, interp_block3, interp_block6], axis=3, name='concat')
         return res
 
     def inference(self, images):
