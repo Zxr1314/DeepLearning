@@ -64,9 +64,9 @@ class PSPnet2D(Net):
         x = self.conv2d('conv5_4', psp, [3,3,input_channel,512], use_bias=False)
         x = tf.nn.relu(x)
         x = tf.nn.dropout(x, 0.1)
+        x = tf.image.resize_images(x, [self.height, self.width])
         x = self.conv2d('conv6', x, [1,1,512,1])
         #x = self.conv2d_transpose('conv6', x, shape, [8,8,1,512])
-        x = tf.image.resize_images(x, [self.height, self.width])
         sigm = tf.nn.sigmoid(x, name='sigm')
         return sigm
 
