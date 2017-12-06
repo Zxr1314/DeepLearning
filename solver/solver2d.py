@@ -125,7 +125,7 @@ class Solver2D(Solver):
             if step % 1000 == 999:
                 saver.save(self.sess, self.train_dir + '/' + self.model_name + '.cpkt', global_step=self.global_step)
                 if self.do_plot:
-                    self.plot.s
+                    self.plot.save_fig()
             if self.testing:
                 if (step % 500 == 0)&(step != 0):
                     temp_eval = {}
