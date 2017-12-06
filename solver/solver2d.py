@@ -140,7 +140,7 @@ class Solver2D(Solver):
                     for i in xrange(n_batch):
                         t_start_time = time.time()
                         t_images, t_labels = self.dataset.test_batch()
-                        t_loss, t_evals = self.sess.run([self.loss, self.evals], feed_dict={self.images: t_images, self.labels: t_labels, self.keep_prob: 1.0})
+                        t_loss, t_evals = self.sess.run([self.loss, self.evals], feed_dict={self.images: t_images, self.labels: t_labels, self.keep_prob_holder: 1.0})
                         t_duration = (time.time()-t_start_time)
                         print('%s: testing %d, loss = %f (%.3f sec/batch)' % (datetime.now(), i, t_loss, t_duration))
                         print(t_evals)
@@ -178,7 +178,7 @@ class Solver2D(Solver):
         predict = np.zeros(input.shape)
         while i < input.shape[0]:
             images = input[i:i+self.batch_size,:,:,:]
-            predict_temp = self.sess.run([self.predicts], feed_dict={self.images: images, self.keep_prob: 1.0})
+            predict_temp = self.sess.run([self.predicts], feed_dict={self.images: images, self.keep_prob_holder: 1.0})
             predict[i:i+self.batch_size,:,:,:] = predict_temp[0]
             i += self.batch_size
         return predict
