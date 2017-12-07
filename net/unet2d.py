@@ -41,7 +41,7 @@ class Unet2D(Net):
         # 572*572
         conv1 = self.conv2d('conv1', images, [3,3,1,64])
         output['conv1'] = conv1
-        relu1 = tf.nn.relu(conv1, 0.2, name='relu1')
+        relu1 = tf.nn.relu(conv1, name='relu1')
         output['relu1'] = relu1
         # 570*570
         conv2 = self.conv2d('conv2', relu1, [3,3,64,64])
@@ -250,7 +250,7 @@ class UnetLReLU2D(Net):
         # 572*572
         conv1 = self.conv2d('conv1', images, [3,3,1,64])
         output['conv1'] = conv1
-        relu1 = self.leaky_relu(conv1, 0.2, name='relu1')
+        relu1 = self.leaky_relu(conv1, name='relu1')
         output['relu1'] = relu1
         # 570*570
         conv2 = self.conv2d('conv2', relu1, [3,3,64,64])
@@ -459,7 +459,7 @@ class UnetSeLU2D(Net):
         # 572*572
         conv1 = self.conv2d('conv1', images, [3,3,1,64])
         output['conv1'] = conv1
-        relu1 = self.selu(conv1, 0.2, name='relu1')
+        relu1 = self.selu(conv1, name='relu1')
         output['relu1'] = relu1
         # 570*570
         conv2 = self.conv2d('conv2', relu1, [3,3,64,64])
@@ -668,7 +668,7 @@ class UnetSwish2D(Net):
         # 572*572
         conv1 = self.conv2d('conv1', images, [3,3,1,64])
         output['conv1'] = conv1
-        relu1 = self.swish(conv1, 0.2, name='relu1')
+        relu1 = self.swish(conv1, name='relu1')
         output['relu1'] = relu1
         # 570*570
         conv2 = self.conv2d('conv2', relu1, [3,3,64,64])
