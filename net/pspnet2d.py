@@ -74,7 +74,7 @@ class PSPnet2D(Net):
         output = {}
         res = self.resnet.inference(images)
         output['resnet'] = res
-        input_shape = res.get_shape()[1:3]
+        input_shape = res['relu4'].get_shape()[1:3]
         psp = self.build_pyramid_pooling_module(res['relu4'], input_shape)
         output['psp'] = psp
         input_channel = int(psp['out'].get_shape()[3])
