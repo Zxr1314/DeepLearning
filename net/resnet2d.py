@@ -144,7 +144,7 @@ class ResNet2D(Net):
             output['res_empty4_' + str(i)] = res
         res = tf.nn.relu(res['out'])
         output['relu4'] = res
-        out = tf.keras.layers.Dense(1000, tf.keras.layers.Activation('softmax'), use_bias=True)(res)
-        output['out'] = out
+        #out = tf.keras.layers.Dense(1000, tf.keras.layers.Activation('softmax'), use_bias=True)(res)
+        #output['out'] = out
         return output
 
