@@ -32,6 +32,8 @@ class Solver2D(Solver):
         self.height = common_params['height']
         self.channel = int(common_params['channel'])
         self.testing = common_params['testing']
+        if self.testing:
+            self.test_batch_size = common_params['test_batch_size']
         if 'pretrain_model_path' in solver_params:
             self.pretrain_path = str(solver_params['pretrain_model_path'])
         else:
@@ -177,8 +179,8 @@ class Solver2D(Solver):
         i = 0
         predict = np.zeros(input.shape)
         while i < input.shape[0]:
-            images = input[i:i+self.batch_size,:,:,:]
+            images = input[i:i+self.test_batch_size,:,:,:]
             predict_temp = self.sess.run([self.predicts], feed_dict={self.images: images, self.keep_prob_holder: 1.0})
-            predict[i:i+self.batch_size,:,:,:] = predict_temp[0]
-            i += self.batch_size
+            predict[i:i+self.test_batch_size,:,:,:] = predict_temp[0]
+            i += self.test_batch_size
         return predict

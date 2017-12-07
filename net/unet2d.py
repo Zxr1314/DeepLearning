@@ -187,6 +187,8 @@ class UnetLReLU2D(Net):
         :param images:
         :return:
         '''
+        if 'keep_prob' in kwargs:
+            self.keep_prob = kwargs['keep_prob']
         # 572*572
         conv1 = self.conv2d('conv1', images, [3,3,1,64])
         relu1 = self.leaky_relu(conv1, 0.2, name='relu1')
