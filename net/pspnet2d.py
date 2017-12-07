@@ -48,7 +48,7 @@ class PSPnet2D(Net):
         return output
 
     def build_pyramid_pooling_module(self, input, input_shape):
-        # feature_map_size = tuple(int(math.ceil(input_dim/8.0)) for input_dim in input_shape)
+        #feature_map_size = tuple(int(math.ceil(input_dim/8.0)) for input_dim in input_shape)
         feature_map_size = input.get_shape()[1:3]
         output = {}
         interp_block1 = self.interp_block(input, 6, feature_map_size, str_lvl=1, name='interp_block1')
@@ -60,13 +60,12 @@ class PSPnet2D(Net):
         interp_block6 = self.interp_block(input, 1, feature_map_size, str_lvl=6, name='interp_block6')
         output['interp_block6'] = interp_block6
 
-        # res = tf.concat([input, interp_block1, interp_block2, interp_block3, interp_block6], axis=3, name='concat')
+        #res = tf.concat([input, interp_block1, interp_block2, interp_block3, interp_block6], axis=3, name='concat')
         try:
-            res = tf.concat([input, interp_block1, interp_block2, interp_block3, interp_block6], axis=3, name='concat')
+            res = tf.concat([input, interp_block1['out'], interp_block2['out'], interp_block3['out'], interp_block6['out']], axis=3, name='concat')
             output['out'] = res
         except:
-            res = tf.concat_v2([input, interp_block1, interp_block2, interp_block3, interp_block6], axis=3,
-                               name='concat')
+            res = tf.concat_v2([input, interp_block1['out'], interp_block2['out'], interp_block3['out'], interp_block6['out']], axis=3, name='concat')
             output['out'] = res
         return output
 
