@@ -76,7 +76,7 @@ class Solver2D(Solver):
         self.keep_prob_holder = tf.placeholder(tf.float32)
 
         self.predicts = self.net.inference(self.images, keep_prob=self.keep_prob_holder)
-        self.loss, self.evals = self.net.loss(self.predicts, self.labels, self.eval_names)
+        self.loss, self.evals = self.net.loss(self.predicts['out'], self.labels, self.eval_names)
 
         tf.summary.scalar('loss', self.loss)
         for key, value in self.evals.items():
@@ -180,7 +180,7 @@ class Solver2D(Solver):
         predict = np.zeros(input.shape)
         while i < input.shape[0]:
             images = input[i:i+self.test_batch_size,:,:,:]
-            predict_temp = self.sess.run([self.predicts], feed_dict={self.images: images, self.keep_prob_holder: 1.0})
+            predict_temp = self.sess.run([self.predicts['out']], feed_dict={self.images: images, self.keep_prob_holder: 1.0})
             predict[i:i+self.test_batch_size,:,:,:] = predict_temp[0]
             i += self.test_batch_size
         return predict
