@@ -154,7 +154,7 @@ class PSPnet2D2(Net):
         x = self.conv2d_transpose('deconv1', x, out_shape, [2, 2, 256, 512], stride=[1,2,2,1])
         out_shape = [shape2[0], int(int(shape[1]) / 2), int(int(shape[2]) / 2), 128]
         x = self.conv2d_transpose('deconv2', x, out_shape, [2, 2, 128, 256], stride=[1, 2, 2, 1])
-        out_shape = [shape2[0], shape[1], shape[2], 64]
+        out_shape = [shape2[0], int(shape[1]), int(shape[2]), 64]
         x = self.conv2d_transpose('deconv3', x, out_shape, [2, 2, 64, 128], stride=[1, 2, 2, 1])
         x = self.conv2d('conv6', x, [1,1,64,1])
         #x = self.conv2d_transpose('conv6', x, shape, [8,8,1,512])
