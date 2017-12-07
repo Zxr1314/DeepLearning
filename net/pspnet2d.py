@@ -87,7 +87,7 @@ class PSPnet2D(Net):
         output['dropout'] = x
         x = tf.image.resize_images(x, [self.height, self.width])
         output['resize'] = x
-        x = self.conv2d('conv6', x, [1, 1, 64, 1])
+        x = self.conv2d('conv6', x, [1, 1, 512, 1])
         output['conv6'] = x
 
         # x = self.conv2d_transpose('conv6', x, shape, [8,8,1,512])
