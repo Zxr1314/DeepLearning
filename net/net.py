@@ -32,7 +32,7 @@ class Net(object):
         :return: Variable Tensor
         '''
         with tf.device('/cpu:0'):
-            var = tf.get_variable(name, shape, dtype=tf.float32, initializer=initializer)
+            var = tf.get_variable(name, shape, dtype=tf.float32, initializer=initializer, trainable=train)
             if pretrain:
                 self.pretrained_collection.append(var)
             if train:
@@ -79,8 +79,9 @@ class Net(object):
             if use_bias:
                 biases = self._variable_on_cpu(scope+'_biases', kernel_size[3:], tf.constant_initializer(0.0), pretrain, train)
                 conv = tf.nn.bias_add(conv, biases)
-            #bn = tf.contrib.layers.batch_norm(conv, decay=0.999, epsilon=1e-3, is_training=True)
-            bn = tf.layers.BatchNormalization(momentum=0.999)
+            #bn = tf.contrib.layers.batch_norm(conv, decay=0.999, epsilon=1e-3, is_training=True, trainable=train)
+            #bn = tf.layers.batch_normalization(conv, training=True, trainable=train)
+            bn = tf.layers.BatchNormalization(momentum=0.999, trainable=train)
             bn2 = bn.apply(conv, training=True)
             if pretrain:
                 self.pretrained_collection.append(bn.beta)

@@ -46,6 +46,10 @@ class Solver2D(Solver):
             self.keep_prob = solver_params['keep_prob']
         else:
             self.keep_prob = 1.0
+        if 'net_input' in solver_params:
+            self.net_input = solver_params['net_input']
+        else:
+            self.net_input = {}
 
         self.dataset = dataset
         self.net = net
@@ -74,8 +78,9 @@ class Solver2D(Solver):
         self.labels = tf.placeholder(tf.float32, [None, self.height, self.width, self.channel])
         self.lr = tf.placeholder(tf.float32)
         self.keep_prob_holder = tf.placeholder(tf.float32)
+        self.net_input['keep_prob'] = self.keep_prob_holder
 
-        self.predicts = self.net.inference(self.images, keep_prob=self.keep_prob_holder)
+        self.predicts = self.net.inference(self.images, **self.net_input)
         self.loss, self.evals = self.net.loss(self.predicts['out'], self.labels, self.eval_names)
 
         tf.summary.scalar('loss', self.loss)
