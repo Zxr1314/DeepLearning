@@ -63,7 +63,7 @@ class Solver2D(Solver):
     def _train(self, lr):
         '''Train model using ADAM optimizer
         '''
-        train = tf.train.AdamOptimizer(lr, self.beta1, self.beta2).minimize(self.loss, global_step=self.global_step)
+        train = tf.train.AdamOptimizer(lr, self.beta1, self.beta2).minimize(self.loss, global_step=self.global_step, var_list=self.net.trainable_collection)
         #grads = opt.compute_gradients(self.loss)
         #train = opt.apply_gradients(grads, global_step=self.global_step)
         return train
@@ -84,8 +84,8 @@ class Solver2D(Solver):
         self.train_op = self._train(self.lr)
 
     def initialize(self):
-        #saver = tf.train.Saver(self.net.pretrained_collection, write_version=1)
-        saver = tf.train.Saver()
+        saver = tf.train.Saver(self.net.pretrained_collection, write_version=1)
+        #saver = tf.train.Saver()
 
         try:
             init = tf.global_variables_initializer()
@@ -99,8 +99,8 @@ class Solver2D(Solver):
             saver.restore(self.sess, self.pretrain_path)
 
     def solve(self):
-        #saver = tf.train.Saver(self.net.trainable_collection, write_version=1)
-        saver = tf.train.Saver()
+        saver = tf.train.Saver(self.net.trainable_collection, write_version=1)
+        #saver = tf.train.Saver()
 
         summary_op = tf.summary.merge_all()
 

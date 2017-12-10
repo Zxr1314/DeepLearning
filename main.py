@@ -49,7 +49,7 @@ solver_params['train_dir'] = 'models'
 #solver_params['model_name'] = 'selu'
 #solver_params['model_name'] = 'swish'
 solver_params['model_name'] = 'pspnet2'
-solver_params['pretrain_model_path'] = 'models/pspnet2.cpkt-24000'
+#solver_params['pretrain_model_path'] = 'models/pspnet2.cpkt-30000'
 solver_params['max_iterators'] = 100000
 learning_rate = np.zeros(100000, dtype=np.float32)
 learning_rate[0:10000] = 0.001
@@ -83,7 +83,7 @@ dataset = FDataSet(common_params, dataset_params)
 net = PSPnet2D2(common_params, net_params)
 solver = Solver2D(dataset, net, common_params, solver_params)
 solver.initialize()
-#solver.solve()
+solver.solve()
 test_file(solver, '/media/E/Documents/VesselData/TrainData/0005/oridata.dat',
           '/media/E/Documents/VesselData/TrainLabel/0005/pspnet_29000.dat')
 test_file(solver, '/media/E/Documents/VesselData/TrainData/0015/oridata.dat',

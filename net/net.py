@@ -58,15 +58,17 @@ class Net(object):
         return var
 
     def conv2d(self, scope, input, kernel_size, stride=[1,1,1,1], padding='SAME', pretrain=True, train=True, use_bias=True):
-        '''2-D convulution layer
+        '''
 
-        :param scope: scope name
-        :param input: 4-D tensor [batch_size, height, width, channel]
-        :param kernel_size: [height, width, in_channel, out_channel]
+        :param scope:
+        :param input:
+        :param kernel_size:
         :param stride:
+        :param padding:
         :param pretrain:
         :param train:
-        :return: 4-D tensor
+        :param use_bias:
+        :return:
         '''
         with tf.name_scope(scope):
             s = float(kernel_size[0]*kernel_size[1])
@@ -77,10 +79,21 @@ class Net(object):
             if use_bias:
                 biases = self._variable_on_cpu(scope+'_biases', kernel_size[3:], tf.constant_initializer(0.0), pretrain, train)
                 conv = tf.nn.bias_add(conv, biases)
-            bn = tf.contrib.layers.batch_norm(conv, decay=0.999, epsilon=1e-3, is_training=True)
-        return bn
+            #bn = tf.contrib.layers.batch_norm(conv, decay=0.999, epsilon=1e-3, is_training=True)
+            bn = tf.layers.BatchNormalization(momentum=0.999)
+            bn2 = bn.apply(conv, training=True)
+            if pretrain:
+                self.pretrained_collection.append(bn.beta)
+                self.pretrained_collection.append(bn.moving_mean)
+                self.pretrained_collection.append(bn.moving_variance)
+            if train:
+                self.trainable_collection.append(bn.beta)
+                self.trainable_collection.append(bn.moving_mean)
+                self.trainable_collection.append(bn.moving_variance)
+        return bn2
 
     def conv2d_transpose(self, scope, input, target, kernel_size, stride=[1,1,1,1], pretrain=True, train=True, use_bias=True):
+        # type: (str, tf.Tensor, tf.Tensor, list, list, bool, bool, bool) -> tf.Tensor
         '''
 
         :param scope:
