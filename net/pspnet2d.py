@@ -273,7 +273,10 @@ class PSPnet2D3(Net):
         output = {}
         psp = self.pspnet2.inference(images, keep_prob=kwargs['keep_prob'], pretrain=True, training=former_train)
         output['psp'] = psp
-        psp_cat = tf.concat([images, psp['conv6']], axis=3, name='psp_concat')
+        try:
+            psp_cat = tf.concat([images, psp['conv6']], axis=3, name='psp_concat')
+        except:
+            psp_cat = tf.concat_v2([images, psp['conv6']], axis=3, name='psp_concat')
         output['psp_cat'] = psp_cat
         conv = self.conv2d('add_conv1', psp_cat, [3,3,2,16], pretrain=pretrain, train=training)
         output['add_conv1'] = conv
