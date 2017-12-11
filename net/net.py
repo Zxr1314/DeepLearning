@@ -8,8 +8,7 @@ import re
 import math
 
 import tensorflow as tf
-if tf.__version__ =='0.12.head':
-    from tensorflow.python.layers.normalization import *
+from tensorflow.python.layers.normalization import *
 import numpy as np
 
 class Net(object):
@@ -83,7 +82,7 @@ class Net(object):
                 conv = tf.nn.bias_add(conv, biases)
             #bn = tf.contrib.layers.batch_norm(conv, decay=0.999, epsilon=1e-3, is_training=True, trainable=train)
             #bn = tf.layers.batch_normalization(conv, training=True, trainable=train)
-            bn = tf.layers.BatchNormalization(momentum=0.999, trainable=train)
+            bn = BatchNormalization(momentum=0.999, trainable=train)
             bn2 = bn.apply(conv, training=True)
             if pretrain:
                 self.pretrained_collection.append(bn.beta)
