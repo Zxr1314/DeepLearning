@@ -8,6 +8,8 @@ import re
 import math
 
 import tensorflow as tf
+if tf.__version__ =='0.12.head':
+    from tensorflow.python.layers.normalization import *
 import numpy as np
 
 class Net(object):

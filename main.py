@@ -48,7 +48,7 @@ solver_params['train_dir'] = 'models'
 #solver_params['model_name'] = 'lrelu'
 #solver_params['model_name'] = 'selu'
 #solver_params['model_name'] = 'swish'
-solver_params['model_name'] = 'pspnet3'
+solver_params['model_name'] = 'pspnet2'
 solver_params['pretrain_model_path'] = 'models/pspnet2.cpkt-4000'
 solver_params['max_iterators'] = 100000
 learning_rate = np.zeros(100000, dtype=np.float32)
@@ -70,7 +70,7 @@ plot_params['max_iterations'] = solver_params['max_iterators']
 #plot_params['save_name'] = 'output/relu.png'
 #plot_params['save_name'] = 'output/lrelu.png'
 #plot_params['save_name'] = 'output/selu.png'
-plot_params['save_name'] = 'output/pspnet3.png'
+plot_params['save_name'] = 'output/pspnet2.png'
 plot_params['interactive'] = True
 solver_params['plot'] = True
 solver_params['plot_params'] = plot_params
@@ -84,7 +84,7 @@ dataset = FDataSet(common_params, dataset_params)
 #net = Unet2D(common_params, net_params)
 #net = UnetLReLU2D(common_params, net_params)
 #net = UnetSeLU2D(common_params, net_params)
-net = PSPnet2D3(common_params, net_params)
+net = PSPnet2D2(common_params, net_params)
 solver = Solver2D(dataset, net, common_params, solver_params)
 solver.initialize()
 solver.solve()
