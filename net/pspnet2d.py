@@ -289,7 +289,7 @@ class PSPnet2D3(Net):
         output['add_relu2'] = relu
         conv = self.conv2d('add_conv3', relu, [1,1,16,1], pretrain=pretrain, train=training, use_bias=True)
         output['add_conv3'] = conv
-        sigm = tf.nn.sigmoid(conv, name='add_sigm')
+        sigm = tf.nn.sigmoid(tf.add(psp['conv6'], conv), name='add_sigm')
         output['out'] = sigm
         self.pretrained_collection += self.pspnet2.pretrained_collection
         self.trainable_collection += self.pspnet2.trainable_collection
