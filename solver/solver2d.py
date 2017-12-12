@@ -12,6 +12,7 @@ import numpy as np
 
 from solver.solver import Solver
 from utils.plot import Plot
+from utils.tensorboard import *
 
 class Solver2D(Solver):
     '''2-D model solver
@@ -82,6 +83,7 @@ class Solver2D(Solver):
 
         self.predicts = self.net.inference(self.images, **self.net_input)
         self.loss, self.evals = self.net.loss(self.predicts['out'], self.labels, self.eval_names)
+        loss_summaries(self.loss)
 
         tf.summary.scalar('loss', self.loss)
         for key, value in self.evals.items():
@@ -104,7 +106,7 @@ class Solver2D(Solver):
             saver.restore(self.sess, self.pretrain_path)
 
     def solve(self):
-        saver = tf.train.Saver(self.net.trainable_collection, write_version=1)
+        saver = tf.train.Saver(self.net.all_collection, write_version=1)
         #saver = tf.train.Saver()
 
         summary_op = tf.summary.merge_all()

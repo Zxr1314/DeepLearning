@@ -11,6 +11,8 @@ import tensorflow as tf
 from tensorflow.python.layers.normalization import *
 import numpy as np
 
+from utils.tensorboard import *
+
 class Net(object):
     def __init__(self, common_params, net_params):
         '''
@@ -20,6 +22,7 @@ class Net(object):
         '''
         self.pretrained_collection = []
         self.trainable_collection = []
+        self.all_collection = []
         return
 
     def _variable_on_cpu(self, name, shape, initializer, pretrain=True, train=True):
@@ -34,10 +37,12 @@ class Net(object):
         '''
         with tf.device('/cpu:0'):
             var = tf.get_variable(name, shape, dtype=tf.float32, initializer=initializer, trainable=train)
+            variable_summaries(var)
             if pretrain:
                 self.pretrained_collection.append(var)
             if train:
                 self.trainable_collection.append(var)
+            self.all_collection.append(var)
         return var
 
     def _variable_with_weight_decay(self, name, shape, stddev, wd, pretrain=True, train=True):
@@ -92,6 +97,9 @@ class Net(object):
                 self.trainable_collection.append(bn.beta)
                 self.trainable_collection.append(bn.moving_mean)
                 self.trainable_collection.append(bn.moving_variance)
+            self.all_collection.append(bn.beta)
+            self.all_collection.append(bn.moving_variance)
+            self.all_collection.append(bn.moving_variance)
         return bn2
 
     def conv2d_transpose(self, scope, input, target, kernel_size, stride=[1,1,1,1], pretrain=True, train=True, use_bias=True):

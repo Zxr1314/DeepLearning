@@ -41,7 +41,6 @@ net_params = {}
 net_params['weight_true'] = 4
 net_params['weight_false'] = 2
 net_params['layers'] = 50
-
 solver_params = {}
 solver_params['train_dir'] = 'models'
 #solver_params['model_name'] = 'relu'
@@ -49,7 +48,7 @@ solver_params['train_dir'] = 'models'
 #solver_params['model_name'] = 'selu'
 #solver_params['model_name'] = 'swish'
 solver_params['model_name'] = 'pspnet2'
-solver_params['pretrain_model_path'] = 'models/pspnet2.cpkt-26000'
+solver_params['pretrain_model_path'] = 'models/pspnet2.cpkt-5000'
 solver_params['max_iterators'] = 100000
 learning_rate = np.zeros(100000, dtype=np.float32)
 learning_rate[0:10000] = 0.001
