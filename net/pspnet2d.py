@@ -284,7 +284,7 @@ class PSPnet2D3(Net):
         output['add_conv1'] = conv
         relu = tf.nn.relu(conv, name='add_relu1')
         output['add_relu1'] = relu
-        conv = self.conv2d('add_conv2', psp_cat, [3, 3, 16, 16], pretrain=pretrain, train=training)
+        conv = self.conv2d('add_conv2', relu, [3, 3, 16, 16], pretrain=pretrain, train=training)
         output['add_conv2'] = conv
         relu = tf.nn.relu(conv, name='add_relu2')
         output['add_relu2'] = relu
