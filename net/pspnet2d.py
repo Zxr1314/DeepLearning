@@ -280,7 +280,7 @@ class PSPnet2D3(Net):
         except:
             psp_cat = tf.concat_v2([images, psp['conv6']], axis=3, name='psp_concat')
         output['psp_cat'] = psp_cat
-        conv = self.conv2d('add_conv1', psp_cat, [3,3,1,16], pretrain=pretrain, train=training)
+        conv = self.conv2d('add_conv1', psp_cat, [3,3,2,16], pretrain=pretrain, train=training)
         output['add_conv1'] = conv
         relu = tf.nn.relu(conv, name='add_relu1')
         output['add_relu1'] = relu
