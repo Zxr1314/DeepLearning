@@ -98,7 +98,7 @@ class Net(object):
                 self.trainable_collection.append(bn.moving_mean)
                 self.trainable_collection.append(bn.moving_variance)
             self.all_collection.append(bn.beta)
-            self.all_collection.append(bn.moving_variance)
+            self.all_collection.append(bn.moving_mean)
             self.all_collection.append(bn.moving_variance)
         return bn2
 

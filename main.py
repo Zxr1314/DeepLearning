@@ -48,7 +48,7 @@ solver_params['train_dir'] = 'models'
 #solver_params['model_name'] = 'selu'
 #solver_params['model_name'] = 'swish'
 solver_params['model_name'] = 'pspnet3'
-solver_params['pretrain_model_path'] = 'models/pspnet3.cpkt-5000'
+solver_params['pretrain_model_path'] = 'models/pspnet3.cpkt-8000'
 solver_params['max_iterators'] = 100000
 learning_rate = np.zeros(100000, dtype=np.float32)
 learning_rate[0:10000] = 0.001
@@ -77,6 +77,7 @@ solver_params['keep_prob'] = 0.9
 net_input = {}
 net_input['training'] = True
 net_input['former_train'] = False
+net_input['pretrain'] = True
 solver_params['net_input'] = net_input
 
 dataset = FDataSet(common_params, dataset_params)
