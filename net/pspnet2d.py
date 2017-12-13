@@ -214,7 +214,7 @@ class PSPnet2D2(Net):
         output['out'] = sigm
         self.pretrained_collection += self.resnet.pretrained_collection
         self.trainable_collection += self.resnet.trainable_collection
-        self.all_collection += self.all_collection
+        self.all_collection += self.resnet.all_collection
         return output
 
     def loss(self, predicts, labels, eval_names):
