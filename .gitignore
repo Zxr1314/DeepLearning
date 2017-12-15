@@ -9,3 +9,4 @@
 models/*
 .idea/*
 output/*
+tensorboard_out/*
