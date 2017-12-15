@@ -381,8 +381,9 @@ class PSPnet2DCombine(Net):
         except:
             psp_cat = tf.concat_v2([psp['conv6'], psp2['conv6']], axis=3, name=self.name+'psp_cat')
         output['psp_cat'] = psp_cat
-        conv = self.conv2d(self.name+'final_conv', psp_cat, [1,1,2,1], pretrain=pretrain, train=training, use_bias=True)
-        output['fin_conv'] = conv
+        conv = self.conv2d(self.name+'final_conv1', psp_cat, [1,1,2,16], pretrain=pretrain, train=training, use_bias=True)
+        output['fin_conv1'] = conv
+        conv = self.conv2d(self.name+'final_conv2', conv, [1,1,16,1], pretrain=pretrain, train=training, use_bias=True)
         sigm = tf.nn.sigmoid(conv, name=self.name+'sigm')
         output['out'] = sigm
 
