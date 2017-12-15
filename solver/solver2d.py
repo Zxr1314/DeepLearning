@@ -36,7 +36,7 @@ class Solver2D(Solver):
         if self.testing:
             self.test_batch_size = common_params['test_batch_size']
         if 'pretrain_model_path' in solver_params:
-            self.pretrain_path = str(solver_params['pretrain_model_path'])
+            self.pretrain_path = solver_params['pretrain_model_path']
         else:
             self.pretrain_path = 'None'
         self.model_name = solver_params['model_name']

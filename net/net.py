@@ -87,7 +87,7 @@ class Net(object):
                 conv = tf.nn.bias_add(conv, biases)
             #bn = tf.contrib.layers.batch_norm(conv, decay=0.999, epsilon=1e-3, is_training=True, trainable=train)
             #bn = tf.layers.batch_normalization(conv, training=True, trainable=train)
-            bn = BatchNormalization(momentum=0.999, trainable=train)
+            bn = BatchNormalization(momentum=0.999, trainable=train, name=scope+'_bn')
             bn2 = bn.apply(conv, training=True)
             if pretrain:
                 self.pretrained_collection.append(bn.beta)
