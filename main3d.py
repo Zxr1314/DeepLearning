@@ -32,10 +32,10 @@ common_params['testing'] = True
 dataset_params = {}
 dataset_params['dtype'] = np.uint16
 dataset_params['random'] = True
-dataset_params['data_path'] = '/media/E/Documents/VesselData/TrainData/arc2D'
-dataset_params['label_path'] = '/media/E/Documents/VesselData/TrainLabel/arc2D'
-dataset_params['test_data_path'] = '/media/E/Documents/VesselData/TrainData/testarc2D'
-dataset_params['test_label_path'] = '/media/E/Documents/VesselData/TrainLabel/testarc2D'
+dataset_params['data_path'] = '/media/E/Documents/VesselData/TrainData/3D128'
+dataset_params['label_path'] = '/media/E/Documents/VesselData/TrainLabel/3D128'
+dataset_params['test_data_path'] = '/media/E/Documents/VesselData/TrainData/test3D128'
+dataset_params['test_label_path'] = '/media/E/Documents/VesselData/TrainLabel/test3D128'
 
 net_params = {}
 net_params['weight_true'] = 4
