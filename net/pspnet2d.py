@@ -216,6 +216,7 @@ class PSPnet2D2(Net):
         output['deconv3'] = x
         x = self.conv2d(self.name+'conv6', x, [1,1,64,1], pretrain=pretrain, train=training)
         output['conv6'] = x
+        self.last_conv = x
 
         #x = self.conv2d_transpose('conv6', x, shape, [8,8,1,512])
         sigm = tf.nn.sigmoid(x, name=self.name+'sigm')
@@ -226,8 +227,10 @@ class PSPnet2D2(Net):
         return output
 
     def loss(self, predicts, labels, eval_names):
-        weight = labels*self.wtrue+self.wfalse
-        loss = tf.losses.absolute_difference(labels, predicts, weights=weight)
+        #weight = labels*self.wtrue+self.wfalse
+        #loss = tf.losses.absolute_difference(labels, predicts, weights=weight)
+        loss = -self.wtrue*self.last_conv*labels+self.wfalse*tf.log(tf.exp(self.last_conv)+1.0)+(self.wtrue-self.wfalse)*labels*tf.log(tf.exp(self.last_conv)+1)
+        loss = tf.reduce_mean(loss)
         evals = {}
         if eval_names is not None:
             seg = tf.round(predicts)
@@ -409,6 +412,7 @@ class PSPnet2DCombine(Net):
     def loss(self, predicts, labels, eval_names):
         weight = labels * self.wtrue + self.wfalse
         loss = tf.losses.absolute_difference(labels, predicts, weights=weight)
+
         evals = {}
         if eval_names is not None:
             seg = tf.round(predicts)

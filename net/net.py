@@ -125,7 +125,7 @@ class Net(object):
                 conv = tf.nn.bias_add(conv, biases)
         return conv
 
-    def conv3d(self, scope, input, kernel_size, stride=[1,1,1,1,1], padding='SAME', pretrain=True, train=True):
+    def conv3d(self, scope, input, kernel_size, stride=[1,1,1,1,1], padding='SAME', pretrain=True, train=True, use_bias=True):
         '''3-D convulution layer
 
         :param scope: scope name
@@ -137,16 +137,31 @@ class Net(object):
         :return: 4-D tensor
         '''
         with tf.name_scope(scope):
-            kernel = self._variable_with_weight_decay('weights', shape=kernel_size,
-                                                      stddev=5e-2, wd=1.0,
+            s = float(kernel_size[0] * kernel_size[1] * kernel_size[2])
+            kernel = self._variable_with_weight_decay(scope+'_weights', shape=kernel_size,
+                                                      stddev=1.0/math.sqrt(s), wd=1.0,
                                                       pretrain=pretrain, train=train)
-            conv = tf.nn.conv3d(input, kernel, strides=stride, padding=padding)
-            bn = tf.contrib.layers.batch_norm(conv, decay=0.999, epsilon=1e-3, is_training=True)
-            biases = self._variable_on_cpu('biases', kernel_size[4], tf.constant_initializer(0.0), pretrain, train)
-            bias = tf.nn.bias_add(bn, biases)
-        return bias
+            conv = tf.nn.conv3d(input, kernel, strides=stride, padding=padding, name=scope+'_conv')
+            #bn = tf.contrib.layers.batch_norm(conv, decay=0.999, epsilon=1e-3, is_training=True)
+            if use_bias:
+                biases = self._variable_on_cpu(scope+'_biases', kernel_size[4], tf.constant_initializer(0.0), pretrain, train)
+                conv = tf.nn.bias_add(conv, biases)
+            bn = BatchNormalization(momentum=0.999, trainable=train, name=scope + '_bn')
+            bn2 = bn.apply(conv, training=True)
+            if pretrain:
+                self.pretrained_collection.append(bn.beta)
+                self.pretrained_collection.append(bn.moving_mean)
+                self.pretrained_collection.append(bn.moving_variance)
+            if train:
+                self.trainable_collection.append(bn.beta)
+                self.trainable_collection.append(bn.moving_mean)
+                self.trainable_collection.append(bn.moving_variance)
+            self.all_collection.append(bn.beta)
+            self.all_collection.append(bn.moving_mean)
+            self.all_collection.append(bn.moving_variance)
+        return bn2
 
-    def conv3d_transpose(self, scope, input, target, kernel_size, stride=[1,1,1,1,1], pretrain=True, train=True):
+    def conv3d_transpose(self, scope, input, target, kernel_size, stride=[1,1,1,1,1], pretrain=True, train=True, use_bias=True):
         '''
 
         :param scope:
@@ -158,13 +173,15 @@ class Net(object):
         :param train:
         :return:
         '''
+        s = float(kernel_size[0] * kernel_size[1] * kernel_size[2])
         with tf.name_scope(scope):
-            kernel = self._variable_on_cpu('weights', kernel_size, tf.truncated_normal_initializer(stddev=5e-2, dtype=tf.float32),
+            kernel = self._variable_on_cpu(scope+'_weights', kernel_size, tf.truncated_normal_initializer(stddev=1.0/math.sqrt(s), dtype=tf.float32),
                                            pretrain=pretrain, train=train)
-            conv = tf.nn.conv3d_transpose(input, kernel, target, stride, name='deconv')
-            biases = self._variable_on_cpu('biases', kernel_size[3], tf.constant_initializer(0.0), pretrain, train)
-            bias = tf.nn.bias_add(conv, biases)
-        return bias
+            conv = tf.nn.conv3d_transpose(input, kernel, target, stride, name=scope+'_deconv')
+            if use_bias:
+                biases = self._variable_on_cpu(scope+'_biases', kernel_size[3], tf.constant_initializer(0.0), pretrain, train)
+                conv = tf.nn.bias_add(conv, biases)
+        return conv
 
     def leaky_relu(self, input, alpha=0.2, name=None):
         '''
