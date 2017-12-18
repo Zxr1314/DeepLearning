@@ -156,7 +156,8 @@ class ResNet2D(Net):
             output['res_empty4_' + str(i)] = res
         res = tf.nn.relu(res['out'])
         output['relu4'] = res
-        #out = tf.keras.layers.Dense(1000, tf.keras.layers.Activation('softmax'), use_bias=True)(res)
-        #output['out'] = out
+        '''conv = self.conv2d(self.name+'dense', res, [64,64,int(res.get_shape()[3]),1], padding='VALID', pretrain=pretrain, train=training, use_bias=True)
+        out = tf.nn.sigmoid(conv, name=self.name+'sigm')
+        output['out'] = out'''
         return output
 

@@ -33,10 +33,10 @@ common_params['testing'] = True
 dataset_params = {}
 dataset_params['dtype'] = np.uint16
 dataset_params['random'] = True
-dataset_params['data_path'] = '/media/E/Documents/VesselData/TrainData/patches2D512'
-dataset_params['label_path'] = '/media/E/Documents/VesselData/TrainLabel/patches2D512'
-dataset_params['test_data_path'] = '/media/E/Documents/VesselData/TrainData/testpatches2D512'
-dataset_params['test_label_path'] = '/media/E/Documents/VesselData/TrainLabel/testpatches2D512'
+dataset_params['data_path'] = '/media/E/Documents/VesselData/TrainData/arc2D'
+dataset_params['label_path'] = '/media/E/Documents/VesselData/TrainLabel/arc2D'
+dataset_params['test_data_path'] = '/media/E/Documents/VesselData/TrainData/testarc2D'
+dataset_params['test_label_path'] = '/media/E/Documents/VesselData/TrainLabel/testarc2D'
 
 net_params = {}
 net_params['weight_true'] = 4
@@ -55,6 +55,7 @@ path2 = 'models/descpsp.cpkt-30000'
 model_path.append(path1)
 model_path.append(path2)
 solver_params['pretrain_model_path'] = model_path
+#solver_params['pretrain_model_path'] = 'models/arcpsp.cpkt-30000'
 solver_params['max_iterators'] = 10000
 learning_rate = np.zeros(10000, dtype=np.float32)
 learning_rate[0:10000] = 0.001
@@ -83,7 +84,7 @@ solver_params['keep_prob'] = 0.9
 net_input = {}
 net_input['training'] = True
 net_input['former_train'] = False
-net_input['pretrain'] = True
+net_input['pretrain'] = False
 net_input['pspnet1_pretrain'] = True
 net_input['pspnet2_pretrain'] = True
 net_input['pspnet1_training'] = False
@@ -94,10 +95,12 @@ dataset = FDataSet(common_params, dataset_params)
 #net = Unet2D(common_params, net_params)
 #net = UnetLReLU2D(common_params, net_params)
 #net = UnetSeLU2D(common_params, net_params)
+#net = PSPnet2D2(common_params, net_params, name='pspnet1')
 net = PSPnet2DCombine(common_params, net_params)
 solver = CombineSolver2D(dataset, net, common_params, solver_params)
+#solver = Solver2D(dataset, net, common_params, solver_params)
 solver.initialize()
-#solver.solve()
+solver.solve()
 test_file(solver, '/media/E/Documents/VesselData/TrainData/0005/oridata.dat',
           '/media/E/Documents/VesselData/TrainLabel/0005/descpsp_30000.dat')
 test_file(solver, '/media/E/Documents/VesselData/TrainData/0049/oridata.dat',

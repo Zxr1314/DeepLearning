@@ -353,6 +353,7 @@ class PSPnet2DCombine(Net):
             self.name = name+'/'
         self.pspnet = PSPnet2D2(common_params, net_params, name=self.name+'pspnet1')
         self.pspnet2 = PSPnet2D2(common_params, net_params, name=self.name+'pspnet2')
+        self.resnet = ResNet2D(common_params, net_params, name=self.name+'resnet')
         self.pretrains = []
         return
 
@@ -376,23 +377,30 @@ class PSPnet2DCombine(Net):
         psp2 = self.pspnet2.inference(images, keep_prob=kwargs['keep_prob'], pretrain=kwargs['pspnet2_pretrain'], training=kwargs['pspnet2_training'])
         output['psp'] = psp
         output['psp2'] = psp2
-        try:
-            psp_cat = tf.concat([psp['conv6'], psp2['conv6']], axis=3, name=self.name+'psp_cat')
+        res = self.resnet.inference(images, pretrain=pretrain, training=training)
+        '''try:
+            psp_cat = tf.concat([psp['conv6'], psp2['conv6'], images], axis=3, name=self.name+'psp_cat')
         except:
-            psp_cat = tf.concat_v2([psp['conv6'], psp2['conv6']], axis=3, name=self.name+'psp_cat')
+            psp_cat = tf.concat_v2([psp['conv6'], psp2['conv6'], images], axis=3, name=self.name+'psp_cat')
         output['psp_cat'] = psp_cat
-        conv = self.conv2d(self.name+'final_conv1', psp_cat, [1,1,2,16], pretrain=pretrain, train=training, use_bias=True)
+        conv = self.conv2d(self.name+'final_conv1', psp_cat, [1,1,3,16], pretrain=pretrain, train=training, use_bias=True)
         output['fin_conv1'] = conv
         conv = self.conv2d(self.name+'final_conv2', conv, [1,1,16,1], pretrain=pretrain, train=training, use_bias=True)
-        sigm = tf.nn.sigmoid(conv, name=self.name+'sigm')
-        output['out'] = sigm
+        sigm = tf.nn.sigmoid(conv, name=self.name+'sigm')'''
+        conv = self.conv2d(self.name + 'dense', res['relu4'], [64, 64, int(res['relu4'].get_shape()[3]), 1], padding='VALID',
+                           pretrain=pretrain, train=training, use_bias=True)
+        out = tf.nn.sigmoid(conv, name=self.name + 'sigm')
+        output['out'] = out*psp['out']+(1-out)*psp2['out']
 
         self.pretrained_collection += self.pspnet.pretrained_collection
         self.pretrained_collection += self.pspnet2.pretrained_collection
+        self.pretrained_collection += self.resnet.pretrained_collection
         self.trainable_collection += self.pspnet.trainable_collection
         self.trainable_collection += self.pspnet2.trainable_collection
+        self.trainable_collection += self.resnet.trainable_collection
         self.all_collection += self.pspnet.all_collection
         self.all_collection += self.pspnet2.all_collection
+        self.all_collection += self.resnet.all_collection
         self.pretrains.append(self.pspnet.pretrained_collection)
         self.pretrains.append(self.pspnet2.pretrained_collection)
 
