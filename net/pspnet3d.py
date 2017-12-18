@@ -121,9 +121,9 @@ class PSPnet3D(Net):
         return output
 
     def loss(self, predicts, labels, eval_names):
-        #weight = labels*self.wtrue+self.wfalse
-        #loss = tf.losses.absolute_difference(labels, predicts, weights=weight)
-        loss = -self.wtrue*self.last_conv*labels+self.wfalse*tf.log(tf.exp(self.last_conv)+1.0)+(self.wtrue-self.wfalse)*labels*tf.log(tf.exp(self.last_conv)+1)
+        weight = labels*self.wtrue+self.wfalse
+        loss = tf.losses.absolute_difference(labels, predicts, weights=weight)
+        #loss = -self.wtrue*self.last_conv*labels+self.wfalse*tf.log(tf.exp(self.last_conv)+1.0)+(self.wtrue-self.wfalse)*labels*tf.log(tf.exp(self.last_conv)+1)
         loss = tf.reduce_mean(loss)
         evals = {}
         if eval_names is not None:
