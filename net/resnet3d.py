@@ -38,18 +38,18 @@ class ResNet3D(Net):
         output = {}
         with tf.name_scope(name):
             if modify_stride:
-                prev = self.conv3d(name+"reduce_"+lvl+'_'+sub_lvl, input, [1,1,1,input_channel,64*level], stride=[1,2,2,2,1], pretrain=pretrain, train=training)
+                prev = self.conv3d(name+"reduce_"+lvl+'_'+sub_lvl, input, [1,1,1,input_channel,32*level], stride=[1,2,2,2,1], pretrain=pretrain, train=training)
                 output['conv1'] = prev
             else:
-                prev = self.conv3d(name+"reduce_"+lvl+'_'+sub_lvl, input, [1,1,1,input_channel,64*level], stride=[1,1,1,1,1], pretrain=pretrain, train=training)
+                prev = self.conv3d(name+"reduce_"+lvl+'_'+sub_lvl, input, [1,1,1,input_channel,32*level], stride=[1,1,1,1,1], pretrain=pretrain, train=training)
                 output['conv1'] = prev
             prev = tf.nn.relu(prev)
             output['relu1'] = prev
-            prev = self.conv3d(name+"3x3_"+lvl+"_"+sub_lvl, prev, [3,3,3,64*level,64*level], stride=[1,1,1,1,1], use_bias=False, pretrain=pretrain, train=training)
+            prev = self.conv3d(name+"3x3_"+lvl+"_"+sub_lvl, prev, [3,3,3,32*level,32*level], stride=[1,1,1,1,1], use_bias=False, pretrain=pretrain, train=training)
             output['conv2'] = prev
             prev = tf.nn.relu(prev)
             output['relu2'] = prev
-            prev = self.conv3d(name+"1x1_"+lvl+'_'+sub_lvl, prev, [1,1,1,64*level,256*level], stride=[1,1,1,1,1], use_bias=False, pretrain=pretrain, train=training)
+            prev = self.conv3d(name+"1x1_"+lvl+'_'+sub_lvl, prev, [1,1,1,32*level,128*level], stride=[1,1,1,1,1], use_bias=False, pretrain=pretrain, train=training)
             output['out'] = prev
         return output
 
@@ -60,10 +60,10 @@ class ResNet3D(Net):
         output = {}
         with tf.name_scope(name):
             if modify_stride:
-                prev = self.conv3d(name+'_conv', input, [1,1,1,input_channel,256*level], stride=[1,2,2,2,1], use_bias=False, pretrain=pretrain, train=training)
+                prev = self.conv3d(name+'_conv', input, [1,1,1,input_channel,128*level], stride=[1,2,2,2,1], use_bias=False, pretrain=pretrain, train=training)
                 output['out'] = prev
             else:
-                prev = self.conv3d(name+'_conv', input, [1,1,1,input_channel,256*level], stride=[1,1,1,1,1], use_bias=False, pretrain=pretrain, train=training)
+                prev = self.conv3d(name+'_conv', input, [1,1,1,input_channel,128*level], stride=[1,1,1,1,1], use_bias=False, pretrain=pretrain, train=training)
                 output['out'] = prev
         return output
 
@@ -116,7 +116,7 @@ class ResNet3D(Net):
         output['conv2'] = conv2
         relu2 = tf.nn.relu(conv2, name=self.name+'relu2')
         output['relu2'] = relu2
-        conv3 = self.conv3d(self.name+'conv3', relu2, [3,3,3,64,128], use_bias=False, pretrain=pretrain, train=training)
+        conv3 = self.conv3d(self.name+'conv3', relu2, [3,3,3,64,64], use_bias=False, pretrain=pretrain, train=training)
         output['conv3'] = conv3
         relu3 = tf.nn.relu(conv3, name=self.name+'relu3')
         output['relu3'] = relu3
