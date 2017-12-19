@@ -41,7 +41,7 @@ class Plot(object):
         self.interactive = plot_params['interactive']
         self.figure = mpl.pyplot.figure(figsize=(18.5,10.5))
         self.loss_plt = self.figure.add_subplot(221)
-        self.loss_plt.axis([0, self.max_iterations, 0, 0.03])
+        self.loss_plt.axis([0, self.max_iterations, 0, 0.5])
         self.loss_plt.set_title('loss')
         self.pre_plt = self.figure.add_subplot(222)
         self.pre_plt.axis([0, self.max_iterations, 0, 1])
