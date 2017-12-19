@@ -16,22 +16,7 @@ from net.resnet2d import ResNet2D
 
 class PSPnet2D(Net):
     def __init__(self, common_params, net_params, name=None):
-        super(PSPnet2D, self).__init__(common_params, net_params)
-        self.width = common_params['width']
-        self.height = common_params['height']
-        self.batch_size = common_params['batch_size']
-        if net_params.has_key('weight_true'):
-            self.wtrue = net_params['weight_true']
-        else:
-            self.wtrue = 0
-        if net_params.has_key('weight_false'):
-            self.wfalse = net_params['weight_false']
-        else:
-            self.wfalse = 1
-        if name is None:
-            self.name = ''
-        else:
-            self.name = name + '/'
+        super(PSPnet2D, self).__init__(common_params, net_params, name)
         self.resnet = ResNet2D(common_params, net_params, self.name+'res')
         return
 
@@ -93,52 +78,16 @@ class PSPnet2D(Net):
         output['resize'] = x
         x = self.conv2d(self.name + 'conv6', x, [1, 1, 512, 1])
         output['conv6'] = x
+        self.last_conv = x
 
         # x = self.conv2d_transpose('conv6', x, shape, [8,8,1,512])
         sigm = tf.nn.sigmoid(x, name='sigm')
         output['out'] = sigm
         return output
 
-    def loss(self, predicts, labels, eval_names):
-        weight = labels * self.wtrue + self.wfalse
-        loss = tf.losses.absolute_difference(labels, predicts, weights=weight)
-        evals = {}
-        if eval_names is not None:
-            seg = tf.round(predicts)
-            if 'accuracy' in eval_names:
-                evals['accuracy'] = tf.reduce_mean(tf.cast(tf.equal(seg, labels), tf.float32))
-            TP = tf.cast(tf.count_nonzero(seg * labels), dtype=tf.float32)
-            FP = tf.cast(tf.count_nonzero((1 - seg) * labels), dtype=tf.float32)
-            FN = tf.cast(tf.count_nonzero(seg * (1 - labels)), dtype=tf.float32)
-            precision = TP / (TP + FP)
-            recall = TP / (TP + FN)
-            f1 = 2 * precision * recall / (precision + recall)
-            if 'precision' in eval_names:
-                evals['precision'] = precision
-            if 'recall' in eval_names:
-                evals['recall'] = recall
-            if 'f1' in eval_names:
-                evals['f1'] = f1
-        return loss, evals
-
 class PSPnet2D2(Net):
     def __init__(self, common_params, net_params, name=None):
-        super(PSPnet2D2, self).__init__(common_params, net_params)
-        self.width = common_params['width']
-        self.height = common_params['height']
-        self.batch_size = common_params['batch_size']
-        if net_params.has_key('weight_true'):
-            self.wtrue = net_params['weight_true']
-        else:
-            self.wtrue = 0
-        if net_params.has_key('weight_false'):
-            self.wfalse = net_params['weight_false']
-        else:
-            self.wfalse = 1
-        if name is None:
-            self.name = ''
-        else:
-            self.name = name + '/'
+        super(PSPnet2D2, self).__init__(common_params, net_params, name)
         self.resnet = ResNet2D(common_params, net_params, self.name+'res')
         return
 
@@ -226,44 +175,9 @@ class PSPnet2D2(Net):
         self.all_collection += self.resnet.all_collection
         return output
 
-    def loss(self, predicts, labels, eval_names):
-        #weight = labels*self.wtrue+self.wfalse
-        #loss = tf.losses.absolute_difference(labels, predicts, weights=weight)
-        loss = -self.wtrue*self.last_conv*labels+self.wfalse*tf.log(tf.exp(self.last_conv)+1.0)+(self.wtrue-self.wfalse)*labels*tf.log(tf.exp(self.last_conv)+1)
-        loss = tf.reduce_mean(loss)
-        evals = {}
-        if eval_names is not None:
-            seg = tf.round(predicts)
-            if 'accuracy' in eval_names:
-                evals['accuracy'] = tf.reduce_mean(tf.cast(tf.equal(seg, labels), tf.float32))
-            TP = tf.cast(tf.count_nonzero(seg * labels), dtype=tf.float32)
-            FP = tf.cast(tf.count_nonzero((1 - seg) * labels), dtype=tf.float32)
-            FN = tf.cast(tf.count_nonzero(seg * (1 - labels)), dtype=tf.float32)
-            precision = TP / (TP + FP)
-            recall = TP / (TP + FN)
-            f1 = 2 * precision * recall / (precision + recall)
-            if 'precision' in eval_names:
-                evals['precision'] = precision
-            if 'recall' in eval_names:
-                evals['recall'] = recall
-            if 'f1' in eval_names:
-                evals['f1'] = f1
-        return loss, evals
-
 class PSPnet2D3(Net):
-    def __init__(self, common_params, net_params):
-        super(PSPnet2D3, self).__init__(common_params, net_params)
-        self.width = common_params['width']
-        self.height = common_params['height']
-        self.batch_size = common_params['batch_size']
-        if net_params.has_key('weight_true'):
-            self.wtrue = net_params['weight_true']
-        else:
-            self.wtrue = 0
-        if net_params.has_key('weight_false'):
-            self.wfalse = net_params['weight_false']
-        else:
-            self.wfalse = 1
+    def __init__(self, common_params, net_params, name=None):
+        super(PSPnet2D3, self).__init__(common_params, net_params, name)
         self.pspnet2 = PSPnet2D2(common_params, net_params)
         return
 
@@ -305,7 +219,9 @@ class PSPnet2D3(Net):
         output['add_relu3'] = relu
         conv = self.conv2d('add_conv4', relu, [1,1,16,1], pretrain=pretrain, train=training, use_bias=True)
         output['add_conv4'] = conv
-        sigm = tf.nn.sigmoid(tf.add(psp['conv6'], conv), name='add_sigm')
+        x = tf.add(psp['conv6'], conv)
+        self.last_conv = x
+        sigm = tf.nn.sigmoid(x, name='add_sigm')
         output['out'] = sigm
         self.pretrained_collection += self.pspnet2.pretrained_collection
         self.trainable_collection += self.pspnet2.trainable_collection
@@ -313,47 +229,10 @@ class PSPnet2D3(Net):
 
         return output
 
-    def loss(self, predicts, labels, eval_names):
-        weight = labels*self.wtrue+self.wfalse
-        loss = tf.losses.absolute_difference(labels, predicts, weights=weight)
-        evals = {}
-        if eval_names is not None:
-            seg = tf.round(predicts)
-            if 'accuracy' in eval_names:
-                evals['accuracy'] = tf.reduce_mean(tf.cast(tf.equal(seg, labels), tf.float32))
-            TP = tf.cast(tf.count_nonzero(seg * labels), dtype=tf.float32)
-            FP = tf.cast(tf.count_nonzero((1 - seg) * labels), dtype=tf.float32)
-            FN = tf.cast(tf.count_nonzero(seg * (1 - labels)), dtype=tf.float32)
-            precision = TP / (TP + FP)
-            recall = TP / (TP + FN)
-            f1 = 2 * precision * recall / (precision + recall)
-            if 'precision' in eval_names:
-                evals['precision'] = precision
-            if 'recall' in eval_names:
-                evals['recall'] = recall
-            if 'f1' in eval_names:
-                evals['f1'] = f1
-        return loss, evals
-
 
 class PSPnet2DCombine(Net):
     def __init__(self, common_params, net_params, name=None):
-        super(PSPnet2DCombine, self).__init__(common_params, net_params)
-        self.width = common_params['width']
-        self.height = common_params['height']
-        self.batch_size = common_params['batch_size']
-        if net_params.has_key('weight_true'):
-            self.wtrue = net_params['weight_true']
-        else:
-            self.wtrue = 0
-        if net_params.has_key('weight_false'):
-            self.wfalse = net_params['weight_false']
-        else:
-            self.wfalse = 1
-        if name is None:
-            self.name = ''
-        else:
-            self.name = name+'/'
+        super(PSPnet2DCombine, self).__init__(common_params, net_params, name)
         self.pspnet = PSPnet2D2(common_params, net_params, name=self.name+'pspnet1')
         self.pspnet2 = PSPnet2D2(common_params, net_params, name=self.name+'pspnet2')
         self.resnet = ResNet2D(common_params, net_params, name=self.name+'resnet')
@@ -392,8 +271,14 @@ class PSPnet2DCombine(Net):
         sigm = tf.nn.sigmoid(conv, name=self.name+'sigm')'''
         conv = self.conv2d(self.name + 'dense', res['relu4'], [64, 64, int(res['relu4'].get_shape()[3]), 1], padding='VALID',
                            pretrain=pretrain, train=training, use_bias=True)
-        out = tf.nn.sigmoid(conv, name=self.name + 'sigm')
-        output['out'] = out*psp['out']+(1-out)*psp2['out']
+        sigm = tf.nn.sigmoid(conv, name=self.name + 'sigm')
+        out = sigm*psp['out']+(1-sigm)*psp2['out']
+        conv = self.conv2d(self.name+'add_conv1', out, [1,1,1,1], pretrain=pretrain, train=training)
+        output['add_conv1'] = conv
+        self.last_conv = tf.log(out / (1 - out))
+
+        sigm = tf.nn.sigmoid(conv, name=self.name+'add_sigm1')
+        output['out'] = sigm
 
         self.pretrained_collection += self.pspnet.pretrained_collection
         self.pretrained_collection += self.pspnet2.pretrained_collection
@@ -408,26 +293,3 @@ class PSPnet2DCombine(Net):
         self.pretrains.append(self.pspnet2.pretrained_collection)
 
         return output
-
-    def loss(self, predicts, labels, eval_names):
-        weight = labels * self.wtrue + self.wfalse
-        loss = tf.losses.absolute_difference(labels, predicts, weights=weight)
-
-        evals = {}
-        if eval_names is not None:
-            seg = tf.round(predicts)
-            if 'accuracy' in eval_names:
-                evals['accuracy'] = tf.reduce_mean(tf.cast(tf.equal(seg, labels), tf.float32))
-            TP = tf.cast(tf.count_nonzero(seg * labels), dtype=tf.float32)
-            FP = tf.cast(tf.count_nonzero((1 - seg) * labels), dtype=tf.float32)
-            FN = tf.cast(tf.count_nonzero(seg * (1 - labels)), dtype=tf.float32)
-            precision = TP / (TP + FP)
-            recall = TP / (TP + FN)
-            f1 = 2 * precision * recall / (precision + recall)
-            if 'precision' in eval_names:
-                evals['precision'] = precision
-            if 'recall' in eval_names:
-                evals['recall'] = recall
-            if 'f1' in eval_names:
-                evals['f1'] = f1
-        return loss, evals

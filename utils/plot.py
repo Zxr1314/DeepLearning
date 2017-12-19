@@ -4,7 +4,7 @@ not finished
 '''
 
 import matplotlib as mpl
-mpl.use('Agg')
+#mpl.use('Agg')
 import matplotlib.pyplot as plt
 
 class Plot(object):
@@ -51,7 +51,10 @@ class Plot(object):
         self.rec_plt.set_title('recall')
         self.f1_plt = self.figure.add_subplot(224)
         self.f1_plt.axis([0, self.max_iterations, 0, 1])
-        self.f1_plt.set_title('f1')
+        if 'dice' in plot_params['eval_names']:
+            self.f1_plt.set_title('dice')
+        else:
+            self.f1_plt.set_title('f1')
         if self.interactive:
             self.figure.show()
         return

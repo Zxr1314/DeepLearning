@@ -69,10 +69,11 @@ eval_names = []
 eval_names.append('accuracy')
 eval_names.append('precision')
 eval_names.append('recall')
-eval_names.append('f1')
+eval_names.append('dice')
 solver_params['eval_names'] = eval_names
 plot_params = {}
 plot_params['max_iterations'] = solver_params['max_iterators']
+plot_params['eval_names'] = eval_names
 #plot_params['save_name'] = 'output/relu.png'
 #plot_params['save_name'] = 'output/lrelu.png'
 #plot_params['save_name'] = 'output/selu.png'

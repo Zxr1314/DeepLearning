@@ -12,7 +12,7 @@ from net.net import Net
 
 class ResNet2D(Net):
     def __init__(self, common_params, net_params, name=None):
-        super(ResNet2D, self).__init__(common_params, net_params)
+        super(ResNet2D, self).__init__(common_params, net_params, name)
         self.width = common_params['width']
         self.height = common_params['height']
         self.batch_size = common_params['batch_size']

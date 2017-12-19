@@ -136,7 +136,9 @@ class Solver3D(Solver):
                         self.plot.plot_train(step, evals['precision'], 1)
                     if 'recall' in self.eval_names:
                         self.plot.plot_train(step, evals['recall'], 2)
-                    if 'f1' in self.eval_names:
+                    if 'dice' in self.eval_names:
+                        self.plot.plot_train(step, evals['dice'], 3)
+                    elif 'f1' in self.eval_names:
                         self.plot.plot_train(step, evals['f1'], 3)
             if step % 1000 == 999:
                 saver.save(self.sess, self.train_dir + '/' + self.model_name + '.cpkt', global_step=self.global_step)
@@ -168,7 +170,9 @@ class Solver3D(Solver):
                             self.plot.plot_test(step, temp_eval['precision'], 1)
                         if 'recall' in temp_eval:
                             self.plot.plot_test(step, temp_eval['recall'], 2)
-                        if 'f1' in temp_eval:
+                        if 'dice' in temp_eval:
+                            self.plot.plot_test(step, temp_eval['dice'], 3)
+                        elif 'f1' in temp_eval:
                             self.plot.plot_test(step, temp_eval['f1'], 3)
         # self.sess.close()
         if self.do_plot:

@@ -14,7 +14,7 @@ import numpy as np
 from utils.tensorboard import *
 
 class Net(object):
-    def __init__(self, common_params, net_params):
+    def __init__(self, common_params, net_params, name=None):
         '''
 
         :param common_params:
@@ -23,6 +23,21 @@ class Net(object):
         self.pretrained_collection = []
         self.trainable_collection = []
         self.all_collection = []
+        self.width = common_params['width']
+        self.height = common_params['height']
+        self.batch_size = common_params['batch_size']
+        if net_params.has_key('weight_true'):
+            self.wtrue = net_params['weight_true']
+        else:
+            self.wtrue = 0
+        if net_params.has_key('weight_false'):
+            self.wfalse = net_params['weight_false']
+        else:
+            self.wfalse = 1
+        if name is None:
+            self.name = ''
+        else:
+            self.name = name+'/'
         return
 
     def _variable_on_cpu(self, name, shape, initializer, pretrain=True, train=True):
@@ -253,4 +268,25 @@ class Net(object):
         :return: loss:
         :return: evals:
         '''
-        raise NotImplementedError
+        weight = labels * self.wtrue + self.wfalse
+        loss = tf.losses.sigmoid_cross_entropy(labels, self.last_conv, weights=weight)
+        evals = {}
+        if eval_names is not None:
+            seg = tf.round(predicts)
+            if 'accuracy' in eval_names:
+                evals['accuracy'] = tf.reduce_mean(tf.cast(tf.equal(seg, labels), tf.float32))
+            TP = tf.cast(tf.count_nonzero(seg * labels), dtype=tf.float32)
+            FP = tf.cast(tf.count_nonzero((1 - seg) * labels), dtype=tf.float32)
+            FN = tf.cast(tf.count_nonzero(seg * (1 - labels)), dtype=tf.float32)
+            precision = TP / (TP + FP)
+            recall = TP / (TP + FN)
+            f1 = 2 * precision * recall / (precision + recall)
+            if 'precision' in eval_names:
+                evals['precision'] = precision
+            if 'recall' in eval_names:
+                evals['recall'] = recall
+            if 'f1' in eval_names:
+                evals['f1'] = f1
+            if 'dice' in  eval_names:
+                evals['dice'] = 2*TP/(2*TP+FP+FN)
+        return loss, evals

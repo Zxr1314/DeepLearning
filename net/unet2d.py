@@ -16,22 +16,7 @@ class Unet2D(Net):
         :param common_params:
         :param net_params:
         '''
-        super(Unet2D, self).__init__(common_params, net_params)
-        self.width = common_params['width']
-        self.height = common_params['height']
-        self.batch_size = common_params['batch_size']
-        if net_params.has_key('weight_true'):
-            self.wtrue = net_params['weight_true']
-        else:
-            self.wtrue = 0
-        if net_params.has_key('weight_false'):
-            self.wfalse = net_params['weight_false']
-        else:
-            self.wfalse = 1
-        if name is None:
-            self.name = ''
-        else:
-            self.name = name+'/'
+        super(Unet2D, self).__init__(common_params, net_params, name)
         return
 
     def inference(self, images, **kwargs):
@@ -194,53 +179,20 @@ class Unet2D(Net):
         # 388*388
         conv19 = self.conv2d(self.name+'conv19', relu26, [1,1,64,1])
         output['conv19'] = conv19
+        self.last_conv = conv19
 
         sigm = tf.nn.sigmoid(conv19, self.name+'sigmoid')
         output['out'] = sigm
         return output
 
-    def loss(self, predicts, labels, eval_names):
-        weight = labels*self.wtrue+self.wfalse
-        loss = tf.losses.absolute_difference(labels, predicts, weights=weight)
-        evals = {}
-        if eval_names is not None:
-            seg = tf.round(predicts)
-            if 'accuracy' in eval_names:
-                evals['accuracy'] = tf.reduce_mean(tf.cast(tf.equal(seg, labels), tf.float32))
-            TP = tf.cast(tf.count_nonzero(seg * labels), dtype=tf.float32)
-            FP = tf.cast(tf.count_nonzero((1 - seg) * labels), dtype=tf.float32)
-            FN = tf.cast(tf.count_nonzero(seg * (1 - labels)), dtype=tf.float32)
-            precision = TP / (TP + FP)
-            recall = TP / (TP + FN)
-            f1 = 2 * precision * recall / (precision + recall)
-            if 'precision' in eval_names:
-                evals['precision'] = precision
-            if 'recall' in eval_names:
-                evals['recall'] = recall
-            if 'f1' in eval_names:
-                evals['f1'] = f1
-        return loss, evals
-
 class UnetLReLU2D(Net):
-    def __init__(self, common_params, net_params):
+    def __init__(self, common_params, net_params, name=None):
         '''
 
         :param common_params:
         :param net_params:
         '''
-        super(UnetLReLU2D, self).__init__(common_params, net_params)
-        self.width = common_params['width']
-        self.height = common_params['height']
-        self.batch_size = common_params['batch_size']
-        if net_params.has_key('weight_true'):
-            self.wtrue = net_params['weight_true']
-        else:
-            self.wtrue = 0
-        if net_params.has_key('weight_false'):
-            self.wfalse = net_params['weight_false']
-        else:
-            self.wfalse = 1
-
+        super(UnetLReLU2D, self).__init__(common_params, net_params, name)
         return
 
     def inference(self, images, **kwargs):
@@ -403,53 +355,20 @@ class UnetLReLU2D(Net):
         # 388*388
         conv19 = self.conv2d('conv19', relu26, [1,1,64,1])
         output['conv19'] = conv19
+        self.last_conv = conv19
 
         sigm = tf.nn.sigmoid(conv19, 'sigmoid')
         output['out'] = sigm
         return output
 
-    def loss(self, predicts, labels, eval_names):
-        weight = labels*self.wtrue+self.wfalse
-        loss = tf.losses.absolute_difference(labels, predicts, weights=weight)
-        evals = {}
-        if eval_names is not None:
-            seg = tf.round(predicts)
-            if 'accuracy' in eval_names:
-                evals['accuracy'] = tf.reduce_mean(tf.cast(tf.equal(seg, labels), tf.float32))
-            TP = tf.cast(tf.count_nonzero(seg * labels), dtype=tf.float32)
-            FP = tf.cast(tf.count_nonzero((1 - seg) * labels), dtype=tf.float32)
-            FN = tf.cast(tf.count_nonzero(seg * (1 - labels)), dtype=tf.float32)
-            precision = TP / (TP + FP)
-            recall = TP / (TP + FN)
-            f1 = 2 * precision * recall / (precision + recall)
-            if 'precision' in eval_names:
-                evals['precision'] = precision
-            if 'recall' in eval_names:
-                evals['recall'] = recall
-            if 'f1' in eval_names:
-                evals['f1'] = f1
-        return loss, evals
-
 class UnetSeLU2D(Net):
-    def __init__(self, common_params, net_params):
+    def __init__(self, common_params, net_params, name=None):
         '''
 
         :param common_params:
         :param net_params:
         '''
-        super(UnetSeLU2D, self).__init__(common_params, net_params)
-        self.width = common_params['width']
-        self.height = common_params['height']
-        self.batch_size = common_params['batch_size']
-        if net_params.has_key('weight_true'):
-            self.wtrue = net_params['weight_true']
-        else:
-            self.wtrue = 0
-        if net_params.has_key('weight_false'):
-            self.wfalse = net_params['weight_false']
-        else:
-            self.wfalse = 1
-
+        super(UnetSeLU2D, self).__init__(common_params, net_params, name)
         return
 
     def inference(self, images, **kwargs):
@@ -612,32 +531,11 @@ class UnetSeLU2D(Net):
         # 388*388
         conv19 = self.conv2d('conv19', relu26, [1,1,64,1])
         output['conv19'] = conv19
+        self.last_conv = conv19
 
         sigm = tf.nn.sigmoid(conv19, 'sigmoid')
         output['out'] = sigm
         return output
-
-    def loss(self, predicts, labels, eval_names):
-        weight = labels*self.wtrue+self.wfalse
-        loss = tf.losses.absolute_difference(labels, predicts, weights=weight)
-        evals = {}
-        if eval_names is not None:
-            seg = tf.round(predicts)
-            if 'accuracy' in eval_names:
-                evals['accuracy'] = tf.reduce_mean(tf.cast(tf.equal(seg, labels), tf.float32))
-            TP = tf.cast(tf.count_nonzero(seg * labels), dtype=tf.float32)
-            FP = tf.cast(tf.count_nonzero((1 - seg) * labels), dtype=tf.float32)
-            FN = tf.cast(tf.count_nonzero(seg * (1 - labels)), dtype=tf.float32)
-            precision = TP / (TP + FP)
-            recall = TP / (TP + FN)
-            f1 = 2 * precision * recall / (precision + recall)
-            if 'precision' in eval_names:
-                evals['precision'] = precision
-            if 'recall' in eval_names:
-                evals['recall'] = recall
-            if 'f1' in eval_names:
-                evals['f1'] = f1
-        return loss, evals
 
 class UnetSwish2D(Net):
     def __init__(self, common_params, net_params, name=None):
@@ -646,23 +544,7 @@ class UnetSwish2D(Net):
         :param common_params:
         :param net_params:
         '''
-        super(UnetSwish2D, self).__init__(common_params, net_params)
-        self.width = common_params['width']
-        self.height = common_params['height']
-        self.batch_size = common_params['batch_size']
-        if net_params.has_key('weight_true'):
-            self.wtrue = net_params['weight_true']
-        else:
-            self.wtrue = 0
-        if net_params.has_key('weight_false'):
-            self.wfalse = net_params['weight_false']
-        else:
-            self.wfalse = 1
-        if name is None:
-            self.name = ''
-        else:
-            self.name = name+'/'
-
+        super(UnetSwish2D, self).__init__(common_params, net_params, name)
         return
 
     def inference(self, images, **kwargs):
@@ -825,29 +707,8 @@ class UnetSwish2D(Net):
         # 388*388
         conv19 = self.conv2d(self.name+'conv19', relu26, [1,1,64,1])
         output['conv19'] = conv19
+        self.last_conv = conv19
 
         sigm = tf.nn.sigmoid(conv19, self.name+'sigmoid')
         output['out'] = sigm
         return output
-
-    def loss(self, predicts, labels, eval_names):
-        weight = labels*self.wtrue+self.wfalse
-        loss = tf.losses.absolute_difference(labels, predicts, weights=weight)
-        evals = {}
-        if eval_names is not None:
-            seg = tf.round(predicts)
-            if 'accuracy' in eval_names:
-                evals['accuracy'] = tf.reduce_mean(tf.cast(tf.equal(seg, labels), tf.float32))
-            TP = tf.cast(tf.count_nonzero(seg * labels), dtype=tf.float32)
-            FP = tf.cast(tf.count_nonzero((1 - seg) * labels), dtype=tf.float32)
-            FN = tf.cast(tf.count_nonzero(seg * (1 - labels)), dtype=tf.float32)
-            precision = TP / (TP + FP)
-            recall = TP / (TP + FN)
-            f1 = 2 * precision * recall / (precision + recall)
-            if 'precision' in eval_names:
-                evals['precision'] = precision
-            if 'recall' in eval_names:
-                evals['recall'] = recall
-            if 'f1' in eval_names:
-                evals['f1'] = f1
-        return loss, evals

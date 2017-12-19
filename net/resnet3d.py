@@ -12,23 +12,9 @@ from net.net import Net
 
 class ResNet3D(Net):
     def __init__(self, common_params, net_params, name=None):
-        super(ResNet3D, self).__init__(common_params, net_params)
-        self.width = common_params['width']
-        self.height = common_params['height']
-        self.batch_size = common_params['batch_size']
-        if net_params.has_key('weight_true'):
-            self.wtrue = net_params['weight_true']
-        else:
-            self.wtrue = 0
-        if net_params.has_key('weight_false'):
-            self.wfalse = net_params['weight_false']
-        else:
-            self.wfalse = 1
+        super(ResNet3D, self).__init__(common_params, net_params, name)
+        self.depth = common_params['depth']
         self.layers = net_params['layers']
-        if name is None:
-            self.name = None
-        else:
-            self.name = name + '/'
         return
 
     def residual_conv(self, input, level, pad=1, lvl=1, sub_lvl=1, modify_stride=False, pretrain=False, training=True, name=None):
