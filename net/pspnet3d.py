@@ -42,12 +42,24 @@ class PSPnet3D(Net):
         with tf.name_scope(name):
             prev_layer = tf.nn.avg_pool3d(input, [1, 2**level, 2**level, 2**level, 1], [1, 2**level, 2**level, 2**level, 1], padding='VALID', name=name+'_avg_pool')
             output['avg_pool'] = prev_layer
-            prev_layer = self.conv3d(name+'_conv', prev_layer, [1,1,1,input_channel,256], pretrain=pretrain, train=training, use_bias=False)
+            prev_layer = self.conv3d(name+'_conv', prev_layer, [1,1,1,input_channel,384], pretrain=pretrain, train=training, use_bias=False)
             output['conv'] = prev_layer
             prev_layer = tf.nn.relu(prev_layer, name=name+'_relu')
             output['relu'] = prev_layer
+            layer_shape = tf.shape(prev_layer)
             #prev_layer = tf.image.resize_images(prev_layer, feature_map_shape)
-            prev_layer = self.conv3d_transpose(name+'_resize', prev_layer, [input_shape[0], input_shape[1], input_shape[2], input_shape[3], 256], [2**level, 2**level, 2**level, 256, 256], [1, 2**level, 2**level, 2**level, 1], pretrain=pretrain, train=training, use_bias=False)
+            prev_layer = self.conv3d_transpose(name + '_resize1', prev_layer,
+                                               [input_shape[0], input_shape[1], layer_shape[2], layer_shape[3], 384],
+                                               [2 ** level, 1, 1, 384, 384], [1, 2 ** level, 1, 1, 1],
+                                               pretrain=pretrain, train=training, use_bias=False)
+            prev_layer = self.conv3d_transpose(name + '_resize2', prev_layer,
+                                               [input_shape[0], input_shape[1], input_shape[2], layer_shape[3], 384],
+                                               [1, 2**level, 1, 384, 384], [1, 1, 2**level, 1, 1], pretrain=pretrain,
+                                               train=training, use_bias=False)
+            prev_layer = self.conv3d_transpose(name + '_resize3', prev_layer,
+                                               [input_shape[0], input_shape[1], input_shape[2], input_shape[3], 384],
+                                               [1, 1, 2 ** level, 384, 384], [1, 1, 1, 2 ** level, 1],
+                                               pretrain=pretrain, train=training, use_bias=False)
             output['out'] = prev_layer
         return output
 
@@ -91,7 +103,7 @@ class PSPnet3D(Net):
         psp = self.build_pyramid_pooling_module(res['relu4'], input_shape, pretrain=pretrain, training=training)
         output['psp'] = psp
         input_channel = int(psp['out'].get_shape()[4])
-        x = self.conv3d(self.name+'conv5_4', psp['out'], [3,3,3,input_channel,256], use_bias=False, pretrain=pretrain, train=training)
+        x = self.conv3d(self.name+'conv5_4', psp['out'], [3,3,3,input_channel,384], use_bias=False, pretrain=pretrain, train=training)
         output['conv5_4'] = x
         x = tf.nn.relu(x, name=self.name+'relu5_4')
         output['relu1'] = x
@@ -99,16 +111,16 @@ class PSPnet3D(Net):
             raise Exception("Keep_prob for dropout layer not given!")
         x = tf.nn.dropout(x, kwargs['keep_prob'])
         output['dropout'] = x
-        out_shape = [shape2[0], int(int(shape[1])/4), int(int(shape[2])/4), int(int(shape[3])/4), 128]
-        x = self.conv3d_transpose(self.name+'deconv1', x, out_shape, [2, 2, 2, 128, 256], stride=[1,2,2,2,1], pretrain=pretrain, train=training)
+        out_shape = [shape2[0], int(int(shape[1])/4), int(int(shape[2])/4), int(int(shape[3])/4), 192]
+        x = self.conv3d_transpose(self.name+'deconv1', x, out_shape, [2, 2, 2, 192, 384], stride=[1,2,2,2,1], pretrain=pretrain, train=training)
         output['deconv1'] = x
-        out_shape = [shape2[0], int(int(shape[1]) / 2), int(int(shape[2]) / 2), int(int(shape[3]) / 2), 64]
-        x = self.conv3d_transpose(self.name+'deconv2', x, out_shape, [2, 2, 2, 64, 128], stride=[1, 2, 2, 2, 1], pretrain=pretrain, train=training)
+        out_shape = [shape2[0], int(int(shape[1]) / 2), int(int(shape[2]) / 2), int(int(shape[3]) / 2), 96]
+        x = self.conv3d_transpose(self.name+'deconv2', x, out_shape, [2, 2, 2, 96, 192], stride=[1, 2, 2, 2, 1], pretrain=pretrain, train=training)
         output['deconv2'] = x
-        out_shape = [shape2[0], int(shape[1]), int(shape[2]), int(shape[3]), 32]
-        x = self.conv3d_transpose(self.name+'deconv3', x, out_shape, [2, 2, 2, 32, 64], stride=[1, 2, 2, 2, 1], pretrain=pretrain, train=training)
+        out_shape = [shape2[0], int(shape[1]), int(shape[2]), int(shape[3]), 48]
+        x = self.conv3d_transpose(self.name+'deconv3', x, out_shape, [2, 2, 2, 48, 96], stride=[1, 2, 2, 2, 1], pretrain=pretrain, train=training)
         output['deconv3'] = x
-        x = self.conv3d(self.name+'conv6', x, [1,1,1,32,1], pretrain=pretrain, train=training)
+        x = self.conv3d(self.name+'conv6', x, [1,1,1,48,1], pretrain=pretrain, train=training)
         output['conv6'] = x
         self.last_conv = x
 
