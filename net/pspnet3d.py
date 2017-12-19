@@ -42,23 +42,23 @@ class PSPnet3D(Net):
         with tf.name_scope(name):
             prev_layer = tf.nn.avg_pool3d(input, [1, 2**level, 2**level, 2**level, 1], [1, 2**level, 2**level, 2**level, 1], padding='VALID', name=name+'_avg_pool')
             output['avg_pool'] = prev_layer
-            prev_layer = self.conv3d(name+'_conv', prev_layer, [1,1,1,input_channel,384], pretrain=pretrain, train=training, use_bias=False)
+            prev_layer = self.conv3d(name+'_conv', prev_layer, [1,1,1,input_channel,256], pretrain=pretrain, train=training, use_bias=False)
             output['conv'] = prev_layer
             prev_layer = tf.nn.relu(prev_layer, name=name+'_relu')
             output['relu'] = prev_layer
             layer_shape = tf.shape(prev_layer)
             #prev_layer = tf.image.resize_images(prev_layer, feature_map_shape)
             prev_layer = self.conv3d_transpose(name + '_resize1', prev_layer,
-                                               [input_shape[0], input_shape[1], layer_shape[2], layer_shape[3], 384],
-                                               [2 ** level, 1, 1, 384, 384], [1, 2 ** level, 1, 1, 1],
+                                               [input_shape[0], input_shape[1], layer_shape[2], layer_shape[3], 256],
+                                               [2 ** level, 1, 1, 256, 256], [1, 2 ** level, 1, 1, 1],
                                                pretrain=pretrain, train=training, use_bias=False)
             prev_layer = self.conv3d_transpose(name + '_resize2', prev_layer,
-                                               [input_shape[0], input_shape[1], input_shape[2], layer_shape[3], 384],
-                                               [1, 2**level, 1, 384, 384], [1, 1, 2**level, 1, 1], pretrain=pretrain,
+                                               [input_shape[0], input_shape[1], input_shape[2], layer_shape[3], 256],
+                                               [1, 2**level, 1, 256, 256], [1, 1, 2**level, 1, 1], pretrain=pretrain,
                                                train=training, use_bias=False)
             prev_layer = self.conv3d_transpose(name + '_resize3', prev_layer,
-                                               [input_shape[0], input_shape[1], input_shape[2], input_shape[3], 384],
-                                               [1, 1, 2 ** level, 384, 384], [1, 1, 1, 2 ** level, 1],
+                                               [input_shape[0], input_shape[1], input_shape[2], input_shape[3], 256],
+                                               [1, 1, 2 ** level, 256, 256], [1, 1, 1, 2 ** level, 1],
                                                pretrain=pretrain, train=training, use_bias=False)
             output['out'] = prev_layer
         return output
