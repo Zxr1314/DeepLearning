@@ -65,8 +65,8 @@ eval_names.append('accuracy')
 eval_names.append('precision')
 eval_names.append('recall')
 eval_names.append('dice')
-eval_names.append('area_loss')
-eval_names.append('edge_loss')
+eval_names.append('area')
+eval_names.append('edge')
 solver_params['eval_names'] = eval_names
 plot_params = {}
 plot_params['max_iterations'] = solver_params['max_iterators']
@@ -95,7 +95,7 @@ net = ChanNet2D(common_params, net_params, name='channet')
 #solver = CombineSolver2D(dataset, net, common_params, solver_params)
 solver = Solver2D(dataset, net, common_params, solver_params)
 solver.initialize()
-solver.solve()
+#solver.solve()
 test_file(solver, '/media/E/Documents/VesselData/TrainData/0005/oridata.dat',
           '/media/E/Documents/VesselData/TrainLabel/0005/descpsp_30000.dat')
 test_file(solver, '/media/E/Documents/VesselData/TrainData/0049/oridata.dat',

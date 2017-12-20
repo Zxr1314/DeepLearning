@@ -148,8 +148,8 @@ class ChanNet2D(PSPnet2D2):
                 evals['f1'] = f1
             if 'dice' in eval_names:
                 evals['dice'] = 2 * TP / (2 * TP + FP + FN)
-            if 'area_loss' in eval_names:
+            if 'area' in eval_names:
                 evals['area'] = area_loss
-            if 'edge_loss' in eval_names:
+            if 'edge' in eval_names:
                 evals['edge'] = hed_loss
         return loss, evals
