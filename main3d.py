@@ -9,15 +9,19 @@ from dataset.fdataset import FDataSet
 from net.pspnet3d import *
 from solver.solver3d import Solver3D
 
-def test_file(solve, file_name, save_name):
-    data = np.fromfile(file_name, dtype=np.float32)
-    stime = time.time()
-    predict = solve.forward(data)
-    duration = time.time()-stime
-    print('testing cost %f seconds.'%duration)
-    predict = predict.astype(np.float32)
-    predict.tofile(save_name)
-    return predict
+def test_file(solve, start_num, end_num):
+    for i in xrange(start_num, end_num):
+        file_name = '/media/E/Documents/VesselData/TrainData/test3D128/'+str(i).zfill(5)+'.dat'
+        save_name = '/media/E/Documents/VesselData/TrainLabel/output3D128/' + str(i).zfill(5) + '.dat'
+        data = np.fromfile(file_name, dtype=np.uint16)
+        data.shape = [1,128,128,128,1]
+        stime = time.time()
+        predict = solve.forward(data)
+        duration = time.time()-stime
+        print('testing %d cost %f seconds.'%(i, duration))
+        predict = predict.astype(np.float32)
+        predict.tofile(save_name)
+    return
 
 common_params = {}
 common_params['batch_size'] = 1
@@ -48,7 +52,7 @@ solver_params['train_dir'] = 'models'
 #solver_params['model_name'] = 'selu'
 #solver_params['model_name'] = 'swish'
 solver_params['model_name'] = 'pspnet3d'
-#solver_params['pretrain_model_path'] = 'models/arcpsp.cpkt-30000'
+solver_params['pretrain_model_path'] = 'models/pspnet3d.cpkt-24000'
 solver_params['max_iterators'] = 10000
 learning_rate = np.zeros(10000, dtype=np.float32)
 learning_rate[0:10000] = 0.001
@@ -78,24 +82,17 @@ solver_params['keep_prob'] = 0.9
 net_input = {}
 net_input['training'] = True
 net_input['former_train'] = False
-net_input['pretrain'] = False
+net_input['pretrain'] = True
 solver_params['net_input'] = net_input
 
 dataset = FDataSet(common_params, dataset_params)
 #net = Unet2D(common_params, net_params)
 #net = UnetLReLU2D(common_params, net_params)
 #net = UnetSeLU2D(common_params, net_params)
-net = PSPnet3D(common_params, net_params, name='pspnet1')
+net = PSPnet3D(common_params, net_params, name='pspnet3d')
 #net = PSPnet2DCombine(common_params, net_params)
 #solver = CombineSolver2D(dataset, net, common_params, solver_params)
 solver = Solver3D(dataset, net, common_params, solver_params)
 solver.initialize()
-solver.solve()
-test_file(solver, '/media/E/Documents/VesselData/TrainData/0005/oridata.dat',
-          '/media/E/Documents/VesselData/TrainLabel/0005/descpsp_30000.dat')
-test_file(solver, '/media/E/Documents/VesselData/TrainData/0049/oridata.dat',
-          '/media/E/Documents/VesselData/TrainLabel/0049/descpsp_30000.dat')
-test_file(solver, '/media/E/Documents/VesselData/TrainData/0115/oridata.dat',
-          '/media/E/Documents/VesselData/TrainLabel/0115/descpsp_30000.dat')
-test_file(solver, '/media/E/Documents/VesselData/TrainData/0322/oridata.dat',
-          '/media/E/Documents/VesselData/TrainLabel/0322/descpsp_30000.dat')
+#solver.solve()
+test_file(solver, 1, 512)

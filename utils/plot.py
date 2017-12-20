@@ -37,11 +37,15 @@ class Plot(object):
             self.test_color = plot_params['test_color']
         else:
             self.test_color = 'r'
+        if 'loss_max' in plot_params:
+            self.loss_max = plot_params['loss_max']
+        else:
+            self.loss_max = 0.03
         self.save_name = plot_params['save_name']
         self.interactive = plot_params['interactive']
         self.figure = mpl.pyplot.figure(figsize=(18.5,10.5))
         self.loss_plt = self.figure.add_subplot(221)
-        self.loss_plt.axis([0, self.max_iterations, 0, 0.5])
+        self.loss_plt.axis([0, self.max_iterations, 0, self.loss_max])
         self.loss_plt.set_title('loss')
         self.pre_plt = self.figure.add_subplot(222)
         self.pre_plt.axis([0, self.max_iterations, 0, 1])

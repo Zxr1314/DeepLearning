@@ -91,7 +91,6 @@ class Solver2D(Solver):
         self.train_op = self._train(self.lr)
 
     def initialize(self):
-        saver = tf.train.Saver(self.net.pretrained_collection, write_version=1)
         #saver = tf.train.Saver()
 
         try:
@@ -103,6 +102,7 @@ class Solver2D(Solver):
 
         self.sess.run(init)
         if self.pretrain_path != 'None':
+            saver = tf.train.Saver(self.net.pretrained_collection, write_version=1)
             saver.restore(self.sess, self.pretrain_path)
 
     def solve(self):
