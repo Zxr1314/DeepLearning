@@ -110,7 +110,7 @@ class ChanNet2D(PSPnet2D2):
         self.last_conv = self.conv2d(self.name+'last_conv', concat2, [1,1,64,1], pretrain=pretrain, train=training)
         output['last_conv'] = self.last_conv
         sigm = tf.nn.sigmoid(self.last_conv, name=self.name+'sigm')
-        output['out'] = hed['outconv0']
+        output['out'] = sigm
 
         self.pretrained_collection += self.resnet.pretrained_collection
         self.trainable_collection += self.resnet.trainable_collection
