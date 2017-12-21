@@ -259,7 +259,7 @@ class Net(object):
         '''
         raise NotImplementedError
 
-    def loss(self, predicts, labels, eval_names):
+    def loss(self, predicts, labels, eval_names, weight=None):
         '''
         Function to calculate losses and other evaluations
         :param predicts:
@@ -268,7 +268,8 @@ class Net(object):
         :return: loss:
         :return: evals:
         '''
-        weight = labels * self.wtrue + self.wfalse
+        if weight is None:
+            weight = labels * self.wtrue + self.wfalse
         loss = tf.losses.sigmoid_cross_entropy(labels, self.last_conv, weights=weight)
         evals = {}
         if eval_names is not None:

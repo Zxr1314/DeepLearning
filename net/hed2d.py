@@ -101,18 +101,19 @@ class HED2D(Net):
 
         return output
 
-    def loss(self, predicts, labels, eval_names):
-        weight0 = labels*self.wtrue+self.wfalse
+    def loss(self, predicts, labels, eval_names, weight=None):
+        if weight is None:
+            weight = labels*self.wtrue+self.wfalse
         label1 = tf.nn.max_pool(labels, [1,2,2,1], [1,2,2,1], padding='VALID', name=self.name+'label_maxpool1')
-        weight1 = label1*self.wtrue+self.wfalse
+        weight1 = tf.nn.max_pool(weight, [1,2,2,1], [1,2,2,1], padding='VALID')
         label2 = tf.nn.max_pool(label1, [1,2,2,1], [1,2,2,1], padding='VALID', name=self.name+'label_maxpool2')
-        weight2 = label2*self.wtrue+self.wfalse
+        weight2 = tf.nn.max_pool(weight1, [1, 2, 2, 1], [1, 2, 2, 1], padding='VALID')
         label3 = tf.nn.max_pool(label2, [1, 2, 2, 1], [1, 2, 2, 1], padding='VALID', name=self.name + 'label_maxpool3')
-        weight3 = label3 * self.wtrue + self.wfalse
+        weight3 = tf.nn.max_pool(weight2, [1, 2, 2, 1], [1, 2, 2, 1], padding='VALID')
         label4 = tf.nn.max_pool(label3, [1, 2, 2, 1], [1, 2, 2, 1], padding='VALID', name=self.name + 'label_maxpool4')
-        weight4 = label4 * self.wtrue + self.wfalse
-        loss_out = tf.losses.sigmoid_cross_entropy(labels, self.out, weights=weight0)
-        loss0 = tf.losses.sigmoid_cross_entropy(labels, self.outconv0, weights=weight0)
+        weight4 = tf.nn.max_pool(weight3, [1, 2, 2, 1], [1, 2, 2, 1], padding='VALID')
+        loss_out = tf.losses.sigmoid_cross_entropy(labels, self.out, weights=weight)
+        loss0 = tf.losses.sigmoid_cross_entropy(labels, self.outconv0, weights=weight)
         loss1 = tf.losses.sigmoid_cross_entropy(label1, self.outconv1, weights=weight1)
         loss2 = tf.losses.sigmoid_cross_entropy(label2, self.outconv2, weights=weight2)
         loss3 = tf.losses.sigmoid_cross_entropy(label3, self.outconv3, weights=weight3)

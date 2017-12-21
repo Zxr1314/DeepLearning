@@ -50,7 +50,7 @@ solver_params['train_dir'] = 'models'
 #solver_params['model_name'] = 'selu'
 #solver_params['model_name'] = 'swish'
 solver_params['model_name'] = 'channet'
-#solver_params['pretrain_model_path'] = 'models/arcpsp.cpkt-30000'
+#solver_params['pretrain_model_path'] = 'models/channet.cpkt-28000'
 solver_params['max_iterators'] = 30000
 learning_rate = np.zeros(30000, dtype=np.float32)
 learning_rate[0:10000] = 0.001
@@ -95,12 +95,12 @@ net = ChanNet2D(common_params, net_params, name='channet')
 #solver = CombineSolver2D(dataset, net, common_params, solver_params)
 solver = Solver2D(dataset, net, common_params, solver_params)
 solver.initialize()
-#solver.solve()
+solver.solve()
 test_file(solver, '/media/E/Documents/VesselData/TrainData/0005/oridata.dat',
-          '/media/E/Documents/VesselData/TrainLabel/0005/descpsp_30000.dat')
+          '/media/E/Documents/VesselData/TrainLabel/0005/channet_edge_28000.dat')
 test_file(solver, '/media/E/Documents/VesselData/TrainData/0049/oridata.dat',
-          '/media/E/Documents/VesselData/TrainLabel/0049/descpsp_30000.dat')
+          '/media/E/Documents/VesselData/TrainLabel/0049/channet_edge_28000.dat')
 test_file(solver, '/media/E/Documents/VesselData/TrainData/0115/oridata.dat',
-          '/media/E/Documents/VesselData/TrainLabel/0115/descpsp_30000.dat')
+          '/media/E/Documents/VesselData/TrainLabel/0115/channet_edge_28000.dat')
 test_file(solver, '/media/E/Documents/VesselData/TrainData/0322/oridata.dat',
-          '/media/E/Documents/VesselData/TrainLabel/0322/descpsp_30000.dat')
+          '/media/E/Documents/VesselData/TrainLabel/0322/channet_edge_28000.dat')
