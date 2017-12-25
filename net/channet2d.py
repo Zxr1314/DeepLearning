@@ -252,7 +252,7 @@ class ChanNet2D2(PSPnet2D2):
         self.last_conv = self.conv2d(self.name+'last_conv', concat2, [1,1,64,1], pretrain=pretrain, train=training)
         output['last_conv'] = self.last_conv
         sigm = tf.nn.sigmoid(self.last_conv, name=self.name+'sigm')
-        output['out'] = sigm
+        output['out'] = self.area
 
         self.pretrained_collection += self.resnet.pretrained_collection
         self.trainable_collection += self.resnet.trainable_collection
@@ -264,11 +264,12 @@ class ChanNet2D2(PSPnet2D2):
 
     def loss(self, predicts, labels, eval_names, weight=None):
         dilated_label = tf.nn.dilation2d(labels, tf.zeros([3,3,1]), strides=[1,1,1,1], rates=[1,1,1,1], padding='SAME')
+        erosed_label = tf.nn.erosion2d(labels, tf.zeros([3,3,1]), strides=[1,1,1,1], rates=[1,1,1,1], padding='SAME')
         edge_label = dilated_label-labels
         hed_weight = edge_label*(self.wtrue+self.wfalse)+labels*self.wfalse
         hed_loss, hed_evals = self.hed.loss(self.edge, edge_label, eval_names, weight=hed_weight)
         if weight is None:
-            weight = labels*self.wtrue+self.wfalse
+            weight = dilated_label*self.wtrue+self.wfalse+self.wtrue*(dilated_label-erosed_label)
         area_loss = tf.losses.sigmoid_cross_entropy(labels, self.area, weights=weight)
         final_loss = tf.losses.sigmoid_cross_entropy(labels, self.last_conv, weights=weight)
         loss = hed_loss+area_loss+final_loss
