@@ -173,32 +173,10 @@ class ChanNet2D(PSPnet2D2):
                 evals['edge'] = hed_loss
         return loss, evals
 
-class ChanNet2D2(PSPnet2D2):
+class ChanNet2D2(ChanNet2D):
     def __init__(self, common_params, net_params, name=None):
         super(ChanNet2D2, self).__init__(common_params, net_params, name)
-        self.resnet = ResNet2D3(common_params, net_params, name=self.name+'resnet')
-        self.hed = HED2D(common_params, net_params, name=self.name+'hed')
         return
-
-    def build_pyramid_pooling_module(self, input, input_shape, pretrain=False, training=True):
-        #feature_map_size = tuple(int(math.ceil(input_dim/8.0)) for input_dim in input_shape)
-        feature_map_size = input.get_shape()[1:3]
-        output = {}
-        interp_block1 = self.interp_block(input, 6, feature_map_size, str_lvl=1, pretrain=pretrain, training=training, name=self.name+'interp_block1')
-        output['interp_block1'] = interp_block1
-        interp_block2 = self.interp_block(input, 3, feature_map_size, str_lvl=2, pretrain=pretrain, training=training, name=self.name+'interp_block2')
-        output['interp_block2'] = interp_block2
-        interp_block3 = self.interp_block(input, 2, feature_map_size, str_lvl=3, pretrain=pretrain, training=training, name=self.name+'interp_block3')
-        output['interp_block3'] = interp_block3
-
-        #res = tf.concat([input, interp_block1, interp_block2, interp_block3, interp_block6], axis=3, name='concat')
-        try:
-            res = tf.concat([input, interp_block1['out'], interp_block2['out'], interp_block3['out']], axis=3, name=self.name+'concat')
-            output['out'] = res
-        except:
-            res = tf.concat_v2([input, interp_block1['out'], interp_block2['out'], interp_block3['out']], axis=3, name=self.name+'concat')
-            output['out'] = res
-        return output
 
     def inference(self, images, **kwargs):
         shape = images.get_shape()
@@ -277,40 +255,3 @@ class ChanNet2D2(PSPnet2D2):
         self.trainable_collection += self.hed.trainable_collection
         self.all_collection += self.hed.all_collection
         return output
-
-    def loss(self, predicts, labels, eval_names, weight=None):
-        dilated_label = tf.nn.dilation2d(labels, tf.zeros([3,3,1]), strides=[1,1,1,1], rates=[1,1,1,1], padding='SAME')
-        erosed_label = tf.nn.erosion2d(labels, tf.zeros([3,3,1]), strides=[1,1,1,1], rates=[1,1,1,1], padding='SAME')
-        edge_label = dilated_label-labels
-        hed_weight = edge_label*(self.wtrue+self.wfalse)+labels*self.wfalse
-        hed_loss, hed_evals = self.hed.loss(self.edge, edge_label, eval_names, weight=hed_weight)
-        if weight is None:
-            weight = dilated_label*self.wtrue+self.wfalse+self.wtrue*(dilated_label-erosed_label)
-        area_loss = tf.losses.sigmoid_cross_entropy(labels, self.area, weights=weight)
-        final_loss = tf.losses.sigmoid_cross_entropy(labels, self.last_conv, weights=weight)
-        loss = hed_loss+area_loss+final_loss
-
-        evals = {}
-        if eval_names is not None:
-            seg = tf.round(predicts)
-            if 'accuracy' in eval_names:
-                evals['accuracy'] = tf.reduce_mean(tf.cast(tf.equal(seg, labels), tf.float32))
-            TP = tf.cast(tf.count_nonzero(seg * labels), dtype=tf.float32)
-            FP = tf.cast(tf.count_nonzero((1 - seg) * labels), dtype=tf.float32)
-            FN = tf.cast(tf.count_nonzero(seg * (1 - labels)), dtype=tf.float32)
-            precision = TP / (TP + FP)
-            recall = TP / (TP + FN)
-            f1 = 2 * precision * recall / (precision + recall)
-            if 'precision' in eval_names:
-                evals['precision'] = precision
-            if 'recall' in eval_names:
-                evals['recall'] = recall
-            if 'f1' in eval_names:
-                evals['f1'] = f1
-            if 'dice' in eval_names:
-                evals['dice'] = 2 * TP / (2 * TP + FP + FN)
-            if 'area' in eval_names:
-                evals['area'] = area_loss
-            if 'edge' in eval_names:
-                evals['edge'] = hed_loss
-        return loss, evals
