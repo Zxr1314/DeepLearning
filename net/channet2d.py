@@ -176,6 +176,7 @@ class ChanNet2D(PSPnet2D2):
 class ChanNet2D2(ChanNet2D):
     def __init__(self, common_params, net_params, name=None):
         super(ChanNet2D2, self).__init__(common_params, net_params, name)
+        self.resnet = ResNet2D3(common_params, net_params, name=self.name + 'resnet')
         return
 
     def inference(self, images, **kwargs):
