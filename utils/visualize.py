@@ -94,13 +94,13 @@ class Visualize2D(object):
             height = shape[1]
             width = shape[2]
             channel = shape[3]
+            fmin = np.min(result)
+            fmax = np.max(result)
             if not os.path.exists(self.save_path+'/'+name):
                 os.makedirs(self.save_path+'/'+name)
             for j in xrange(channel):
                 save_image = result[:,:,:,j]
                 save_image.shape = [height, width]
-                fmax = np.max(save_image)
-                fmin = np.min(save_image)
                 save_image = (save_image-fmin)*255/(fmax-fmin)
                 img = Image.fromarray(save_image.astype(np.uint8))
                 img.save(self.save_path+'/'+name+'/'+str(j)+'.jpg')

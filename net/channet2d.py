@@ -19,15 +19,30 @@ class ChanNet2D(PSPnet2D2):
         self.hed = HED2D(common_params, net_params, name=self.name+'hed')
         return
 
+    def interp_block(self, input, level, feature_map_shape, str_lvl=1, pretrain=False, training=True, name=None):
+        str_lvl = str(str_lvl)
+        input_channel = int(input.get_shape()[3])
+        output = {}
+        with tf.name_scope(name):
+            prev_layer = tf.nn.avg_pool(input, [1, 2**level, 2**level, 1], [1, 2**level, 2**level, 1], padding='VALID', name=name+'_avg_pool')
+            output['avg_pool'] = prev_layer
+            prev_layer = self.conv2d(name+'_conv', prev_layer, [1,1,input_channel,512], pretrain=pretrain, train=training)
+            output['conv'] = prev_layer
+            prev_layer = tf.nn.relu(prev_layer, name=name+'_relu')
+            output['relu'] = prev_layer
+            prev_layer = tf.image.resize_images(prev_layer, feature_map_shape)
+            output['out'] = prev_layer
+        return output
+
     def build_pyramid_pooling_module(self, input, input_shape, pretrain=False, training=True):
         #feature_map_size = tuple(int(math.ceil(input_dim/8.0)) for input_dim in input_shape)
         feature_map_size = input.get_shape()[1:3]
         output = {}
-        interp_block1 = self.interp_block(input, 6, feature_map_size, str_lvl=1, pretrain=pretrain, training=training, name=self.name+'interp_block1')
+        interp_block1 = self.interp_block(input, 1, feature_map_size, str_lvl=1, pretrain=pretrain, training=training, name=self.name+'interp_block1')
         output['interp_block1'] = interp_block1
-        interp_block2 = self.interp_block(input, 3, feature_map_size, str_lvl=2, pretrain=pretrain, training=training, name=self.name+'interp_block2')
+        interp_block2 = self.interp_block(input, 2, feature_map_size, str_lvl=2, pretrain=pretrain, training=training, name=self.name+'interp_block2')
         output['interp_block2'] = interp_block2
-        interp_block3 = self.interp_block(input, 2, feature_map_size, str_lvl=3, pretrain=pretrain, training=training, name=self.name+'interp_block3')
+        interp_block3 = self.interp_block(input, 3, feature_map_size, str_lvl=3, pretrain=pretrain, training=training, name=self.name+'interp_block3')
         output['interp_block3'] = interp_block3
 
         #res = tf.concat([input, interp_block1, interp_block2, interp_block3, interp_block6], axis=3, name='concat')
@@ -253,7 +268,7 @@ class ChanNet2D2(PSPnet2D2):
         self.last_conv = self.conv2d(self.name+'last_conv', concat2, [1,1,64,1], pretrain=pretrain, train=training)
         output['last_conv'] = self.last_conv
         sigm = tf.nn.sigmoid(self.last_conv, name=self.name+'sigm')
-        output['out'] = self.area
+        output['out'] = sigm
 
         self.pretrained_collection += self.resnet.pretrained_collection
         self.trainable_collection += self.resnet.trainable_collection
