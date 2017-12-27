@@ -51,6 +51,10 @@ class Solver2D(Solver):
             self.net_input = solver_params['net_input']
         else:
             self.net_input = {}
+        if 'aug' in  solver_params:
+            self.aug = solver_params['aug']
+        else:
+            self.aug = None
 
         self.dataset = dataset
         self.net = net
@@ -117,6 +121,8 @@ class Solver2D(Solver):
         for step in xrange(self.max_iterators):
             start_time = time.time()
             np_images, np_labels = self.dataset.batch()
+            if self.aug is not None:
+                np_images = self.aug.process(np_images)
             _, loss, evals = self.sess.run([self.train_op, self.loss, self.evals], feed_dict={self.images: np_images, self.labels: np_labels, self.lr: self.learning_rate[step], self.keep_prob_holder: self.keep_prob})
             duration = time.time()-start_time
             assert not np.isnan(loss), 'Model diverged with loss = NaN'
@@ -153,6 +159,8 @@ class Solver2D(Solver):
                     for i in xrange(n_batch):
                         t_start_time = time.time()
                         t_images, t_labels = self.dataset.test_batch()
+                        if self.aug is not None:
+                            t_images = self.aug.process(t_images)
                         t_loss, t_evals = self.sess.run([self.loss, self.evals], feed_dict={self.images: t_images, self.labels: t_labels, self.keep_prob_holder: 1.0})
                         t_duration = (time.time()-t_start_time)
                         print('%s: testing %d, loss = %f (%.3f sec/batch)' % (datetime.now(), i, t_loss, t_duration))
@@ -193,6 +201,8 @@ class Solver2D(Solver):
         predict = np.zeros(input.shape)
         while i < input.shape[0]:
             images = input[i:i+self.test_batch_size,:,:,:]
+            if self.aug is not None:
+                images = self.aug.process(images)
             predict_temp = self.sess.run([self.predicts['out']], feed_dict={self.images: images, self.keep_prob_holder: 1.0})
             predict[i:i+self.test_batch_size,:,:,:] = predict_temp[0]
             i += self.test_batch_size

@@ -10,6 +10,7 @@ from net.unet2d import *
 from net.pspnet2d import *
 from net.channet2d import *
 from solver.solver2d import Solver2D
+from utils.augmentation import *
 from solver.combinesolver2d import CombineSolver2D
 
 def test_file(solve, file_name, save_name):
@@ -50,7 +51,7 @@ solver_params['train_dir'] = 'models'
 #solver_params['model_name'] = 'selu'
 #solver_params['model_name'] = 'swish'
 solver_params['model_name'] = 'channet'
-solver_params['pretrain_model_path'] = 'models/channet4.cpkt-30000'
+#solver_params['pretrain_model_path'] = 'models/channet4.cpkt-30000'
 solver_params['max_iterators'] = 30000
 learning_rate = np.zeros(30000, dtype=np.float32)
 learning_rate[0:10000] = 0.001
@@ -84,6 +85,7 @@ net_input = {}
 net_input['training'] = True
 net_input['former_train'] = True
 net_input['pretrain'] = True
+aug = Augmentations('scaling', div=1024, bias=-1)
 solver_params['net_input'] = net_input
 
 dataset = FDataSet(common_params, dataset_params)
@@ -95,7 +97,7 @@ net = ChanNet2D(common_params, net_params, name='channet')
 #solver = CombineSolver2D(dataset, net, common_params, solver_params)
 solver = Solver2D(dataset, net, common_params, solver_params)
 solver.initialize()
-#solver.solve()
+solver.solve()
 test_file(solver, '/media/E/Documents/VesselData/TrainData/0005/oridata.dat',
           '/media/E/Documents/VesselData/TrainLabel/0005/channet4_30000.dat')
 test_file(solver, '/media/E/Documents/VesselData/TrainData/0049/oridata.dat',
