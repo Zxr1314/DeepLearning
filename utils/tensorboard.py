@@ -14,8 +14,8 @@ def variable_summaries(var):
         tf.summary.scalar('mean', mean)
         stddev = tf.sqrt(tf.reduce_mean(tf.square(var-mean)))
         tf.summary.scalar('stddev', stddev)
-        tf.summary.scalar('max', tf.reduce_max(var))
-        tf.summary.scalar('min', tf.reduce_min(var))
+        #tf.summary.scalar('max', tf.reduce_max(var))
+        #tf.summary.scalar('min', tf.reduce_min(var))
         tf.summary.histogram('histogram', var)
     return
 

@@ -114,8 +114,9 @@ class Solver2D(Solver):
         #saver = tf.train.Saver()
 
         summary_op = tf.summary.merge_all()
-
-        summary_writer = tf.summary.FileWriter(self.train_dir, self.sess.graph)
+        write_dir = self.train_dir+'/'+self.model_name+'/'+str(datetime.now())+'/'
+        train_writer = tf.summary.FileWriter(write_dir+'train', self.sess.graph)
+        test_writer = tf.summary.FileWriter(write_dir+'test', self.sess.graph)
         if self.testing:
             n_batch = self.dataset.get_n_test_batch()
         for step in xrange(self.max_iterators):
@@ -135,7 +136,7 @@ class Solver2D(Solver):
                 print(evals)
                 sys.stdout.flush()
                 summary_str = self.sess.run(summary_op, feed_dict={self.images: np_images, self.labels: np_labels, self.keep_prob_holder: self.keep_prob})
-                summary_writer.add_summary(summary_str, step)
+                train_writer.add_summary(summary_str, step)
                 if self.do_plot:
                     self.plot.plot_train(step, loss, 0)
                     if 'precision' in self.eval_names:
@@ -161,7 +162,8 @@ class Solver2D(Solver):
                         t_images, t_labels = self.dataset.test_batch()
                         if self.aug is not None:
                             t_images = self.aug.process(t_images)
-                        t_loss, t_evals = self.sess.run([self.loss, self.evals], feed_dict={self.images: t_images, self.labels: t_labels, self.keep_prob_holder: 1.0})
+                        t_loss, t_evals, t_summary = self.sess.run([self.loss, self.evals, summary_op], feed_dict={self.images: t_images, self.labels: t_labels, self.keep_prob_holder: 1.0})
+                        test_writer.add_summary(t_summary, step)
                         t_duration = (time.time()-t_start_time)
                         print('%s: testing %d, loss = %f (%.3f sec/batch)' % (datetime.now(), i, t_loss, t_duration))
                         print(t_evals)

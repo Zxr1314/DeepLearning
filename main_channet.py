@@ -13,19 +13,40 @@ from solver.solver2d import Solver2D
 from utils.augmentation import *
 from solver.combinesolver2d import CombineSolver2D
 
-def test_file(solve, file_name, save_name):
+def test_file(solve, file_name, label_name, save_name):
     data = np.fromfile(file_name, dtype=np.float32)
+    label = np.fromfile(label_name, dtype=np.float32)
+    nz = label.shape[0]/512/512
+    label.shape = [nz, 512, 512]
+    startz = 0
+    endz = 0
+    bFind = False
+    for i in range(nz):
+        if np.sum(label[i,:,:]) != 0:
+            if not bFind:
+                bFind = True
+                startz = i
+            endz = i
     stime = time.time()
     predict = solve.forward(data)
     duration = time.time()-stime
-    print('testing cost %f seconds.'%duration)
+    predict.shape = [nz,512,512]
+    seg = (predict>0.5).astype(np.float32)
+    TP = np.sum(seg[startz:endz,:,:]*label[startz:endz,:,:]).astype(np.float32)
+    FP = np.sum((1-seg[startz:endz,:,:])*label[startz:endz,:,:]).astype(np.float32)
+    FN = np.sum((1-label[startz:endz,:,:])*seg[startz:endz,:,:]).astype(np.float32)
+    precision = TP / (TP + FP)
+    recall = TP / (TP + FN)
+    IoU = TP/(TP+FP+FN)
+    dice = 2 * TP / (2 * TP + FP + FN)
+    print('testing cost %f seconds.\n\tprecision=%f, recall=%f, iou=%f, dice=%f'%(duration, precision, recall, IoU, dice))
     predict = predict.astype(np.float32)
     predict.tofile(save_name)
     return predict
 
 common_params = {}
 common_params['batch_size'] = 1
-common_params['test_batch_size'] = 6
+common_params['test_batch_size'] = 10
 common_params['dimension'] = 2
 common_params['width'] = 512
 common_params['height'] = 512
@@ -86,6 +107,7 @@ net_input['training'] = True
 net_input['former_train'] = True
 net_input['pretrain'] = True
 aug = Augmentations('scaling', div=1024, bias=-1)
+solver_params['aug'] = aug
 solver_params['net_input'] = net_input
 
 dataset = FDataSet(common_params, dataset_params)
@@ -98,11 +120,13 @@ net = ChanNet2D(common_params, net_params, name='channet')
 solver = Solver2D(dataset, net, common_params, solver_params)
 solver.initialize()
 solver.solve()
-test_file(solver, '/media/E/Documents/VesselData/TrainData/0005/oridata.dat',
+test_file(solver, '/media/E/Documents/VesselData/TrainData/0005/oridata.dat','/media/E/Documents/VesselData/TrainLabel/0005/orilabel.dat',
           '/media/E/Documents/VesselData/TrainLabel/0005/channet4_30000.dat')
-test_file(solver, '/media/E/Documents/VesselData/TrainData/0049/oridata.dat',
+test_file(solver, '/media/E/Documents/VesselData/TrainData/0049/oridata.dat','/media/E/Documents/VesselData/TrainLabel/0049/orilabel.dat',
           '/media/E/Documents/VesselData/TrainLabel/0049/channet4_30000.dat')
-test_file(solver, '/media/E/Documents/VesselData/TrainData/0115/oridata.dat',
-          '/media/E/Documents/VesselData/TrainLabel/0115/channet4_30000.dat')
-test_file(solver, '/media/E/Documents/VesselData/TrainData/0322/oridata.dat',
+test_file(solver, '/media/E/Documents/VesselData/TrainData/0322/oridata.dat','/media/E/Documents/VesselData/TrainLabel/0322/orilabel.dat',
           '/media/E/Documents/VesselData/TrainLabel/0322/channet4_30000.dat')
+test_file(solver, '/media/E/Documents/VesselData/TrainData/1008/oridata.dat','/media/E/Documents/VesselData/TrainLabel/1008/orilabel.dat',
+          '/media/E/Documents/VesselData/TrainLabel/1008/channet4_30000.dat')
+test_file(solver, '/media/E/Documents/VesselData/TrainData/1015/oridata.dat','/media/E/Documents/VesselData/TrainLabel/1015/orilabel.dat',
+          '/media/E/Documents/VesselData/TrainLabel/1015/channet4_30000.dat')
