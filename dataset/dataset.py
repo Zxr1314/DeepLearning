@@ -30,3 +30,10 @@ class DataSet(object):
         :return:
         '''
         raise NotImplementedError
+
+    def test_random_batch(self):
+        '''
+
+        :return:
+        '''
+        raise NotImplementedError

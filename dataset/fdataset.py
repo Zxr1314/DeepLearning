@@ -105,10 +105,10 @@ class FDataSet(DataSet):
 
     def batch(self):
         if self.random:
-            data, label = self.__random_batch()
+            data, label = self.__random_batch(self.batch_size, self.data_files, self.label_files)
         else:
             if self.bSize:
-                data, label, self.i_batch = self.__sequential_batch(self.i_batch, self.n_batch, self.data_files_batch, self.label_files_batch)
+                data, label, self.i_batch = self.__sequential_batch(self.i_batch, self.n_batch, self.batch_size, self.data_files_batch, self.label_files_batch)
             else:
                 data, label, self.i_batch = self.__sequential_batch(self.i_batch, self.n_batch, self.batch_size, self.data_files, self.label_files, self.size_files)
         return data, label
@@ -125,6 +125,17 @@ class FDataSet(DataSet):
                                                     self.test_label_files, self.test_size_files)
         return tdata, tlabel
 
+    def test_random_batch(self):
+        '''
+
+        :return:
+        '''
+        if self.bSize:
+            tdata, tlabel = self.__random_batch(self.test_batch_size, self.test_data_files, self.test_label_files)
+        else:
+            tdata, tlabel = self.__random_batch(self.test_batch_size, self.test_data_files, self.test_label_files, self.test_size_files)
+        return tdata, tlabel
+
     def get_n_test_batch(self):
         '''
 
@@ -132,16 +143,16 @@ class FDataSet(DataSet):
         '''
         return self.test_n_batch
 
-    def __random_batch(self):
+    def __random_batch(self, batch_size, data_files, label_files, size_files=None):
         '''
 
         :return:
         '''
         if not self.bSize:
-            index = random.randint(0, len(self.data_files))
-            data = np.fromfile(self.data_files[index], dtype=self.dtype).astype(np.float32)
-            label = np.fromfile(self.label_files[index], dtype=self.dtype).astype(np.float32)
-            size = np.loadtxt(self.size_files[index], dtype=np.uint16)
+            index = random.randint(0, len(data_files))
+            data = np.fromfile(data_files[index], dtype=self.dtype).astype(np.float32)
+            label = np.fromfile(label_files[index], dtype=self.dtype).astype(np.float32)
+            size = np.loadtxt(size_files[index], dtype=np.uint16)
             if self.dimension==2:
                 data.shape = [1, size[0], size[1], self.channel]
                 label.shape = [1, size[0], size[1], 1]
@@ -155,10 +166,10 @@ class FDataSet(DataSet):
             else:
                 data = np.zeros([self.batch_size, self.depth, self.height, self.width, self.channel], dtype=np.float32)
                 label = np.zeros([self.batch_size, self.depth, self.height, self.width, 1], dtype=np.float32)
-            index = random.sample(range(len(self.data_files)), self.batch_size)
+            index = random.sample(range(len(data_files)), self.batch_size)
             for i in xrange(self.batch_size):
-                d = np.fromfile(self.data_files[index[i]], dtype=self.dtype).astype(np.float32)
-                l = np.fromfile(self.label_files[index[i]], dtype=self.dtype).astype(np.float32)
+                d = np.fromfile(data_files[index[i]], dtype=self.dtype).astype(np.float32)
+                l = np.fromfile(label_files[index[i]], dtype=self.dtype).astype(np.float32)
                 if self.dimension==2:
                     d.shape = [1, self.height, self.width, self.channel]
                     l.shape = [1, self.height, self.width, 1]
