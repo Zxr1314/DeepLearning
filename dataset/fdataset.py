@@ -51,6 +51,16 @@ class FDataSet(DataSet):
         self.data_files.sort()
         self.label_files.sort()
 
+        if 'label_type' in common_params:
+            self.label_type = common_params['label_type']
+        else:
+            self.label_type = 'matrix'
+        if self.label_type == 'array':
+            if 'label_len' in common_params:
+                self.label_len = common_params['label_len']
+            else:
+                raise Exception('Label type is array while not given label length!')
+
         if not self.random:
             self.data_files_batch = []
             self.label_files_batch = []
@@ -61,12 +71,12 @@ class FDataSet(DataSet):
                 i += self.batch_size
             self.n_batch = len(self.data_files_batch)
             self.i_batch = 0
+        self.test_batch_size = common_params['test_batch_size']
 
         self.testing = common_params['testing']
         if self.testing:
             if 'test_batch_size' not in common_params or 'test_data_path' not in dataset_params or 'test_label_path' not in dataset_params:
                 raise Exception('Testing chosen while parameters not given!')
-            self.test_batch_size = common_params['test_batch_size']
             self.test_data_path = dataset_params['test_data_path']
             self.test_label_path = dataset_params['test_label_path']
             self.test_data_files = self.__get_files(self.test_data_path)
@@ -155,27 +165,32 @@ class FDataSet(DataSet):
             size = np.loadtxt(size_files[index], dtype=np.uint16)
             if self.dimension==2:
                 data.shape = [1, size[0], size[1], self.channel]
-                label.shape = [1, size[0], size[1], 1]
+                label = self.__resize_label2D(label, size)
             else:
                 data.shape = [1, size[0], size[1], size[2], self.channel]
-                label.shape = [1, size[0], size[1], size[2], 1]
+                label = self.__resize_label3D(label, size)
         else:
             if self.dimension==2:
-                data = np.zeros([self.batch_size, self.height, self.width, self.channel], dtype=np.float32)
-                label = np.zeros([self.batch_size, self.height, self.width, 1], dtype=np.float32)
+                data = np.zeros([batch_size, self.height, self.width, self.channel], dtype=np.float32)
+                #label = np.zeros([self.batch_size, self.height, self.width, 1], dtype=np.float32)
+                label = self.__alloc_label2D(batch_size)
             else:
-                data = np.zeros([self.batch_size, self.depth, self.height, self.width, self.channel], dtype=np.float32)
-                label = np.zeros([self.batch_size, self.depth, self.height, self.width, 1], dtype=np.float32)
-            index = random.sample(range(len(data_files)), self.batch_size)
-            for i in xrange(self.batch_size):
+                data = np.zeros([batch_size, self.depth, self.height, self.width, self.channel], dtype=np.float32)
+                #label = np.zeros([self.batch_size, self.depth, self.height, self.width, 1], dtype=np.float32)
+                label = self.__alloc_label3D(batch_size)
+
+            index = random.sample(range(len(data_files)), batch_size)
+            for i in xrange(batch_size):
                 d = np.fromfile(data_files[index[i]], dtype=self.dtype).astype(np.float32)
                 l = np.fromfile(label_files[index[i]], dtype=self.dtype).astype(np.float32)
                 if self.dimension==2:
                     d.shape = [1, self.height, self.width, self.channel]
-                    l.shape = [1, self.height, self.width, 1]
+                    #l.shape = [1, self.height, self.width, 1]
+                    l = self.__resize_label2D(l)
                 else:
                     d.shape = [1, self.depth, self.height, self.width, self.channel]
-                    l.shape = [1, self.depth, self.height, self.width, 1]
+                    #l.shape = [1, self.depth, self.height, self.width, 1]
+                    l = self.__resize_label3D(l)
                 data[i,:] = d
                 label[i,:] = l
         return data, label
@@ -186,33 +201,86 @@ class FDataSet(DataSet):
         :return:
         '''
         if not self.bSize:
-            index = random.randint(0, len(self.data_files))
             data = np.fromfile(data_files_batch[i_batch], dtype=self.dtype).astype(np.float32)
             label = np.fromfile(label_files_batch[i_batch], dtype=self.dtype).astype(np.float32)
             size = np.loadtxt(size_files_batch[i_batch], dtype=np.uint16)
             if self.dimension==2:
                 data.shape = [1, size[0], size[1], self.channel]
-                label.shape = [1, size[0], size[1], 1]
+                #label.shape = [1, size[0], size[1], 1]
+                label = self.__resize_label2D(label, size)
             else:
                 data.shape = [1, size[0], size[1], size[2], self.channel]
-                label.shape = [1, size[0], size[1], size[2], 1]
+                #label.shape = [1, size[0], size[1], size[2], 1]
+                label = self.__resize_label3D(label, size)
         else:
             if self.dimension==2:
                 data = np.zeros([batch_size, self.height, self.width, self.channel], dtype=np.float32)
-                label = np.zeros([batch_size, self.height, self.width, 1], dtype=np.float32)
+                #label = np.zeros([batch_size, self.height, self.width, 1], dtype=np.float32)
+                label = self.__alloc_label2D(batch_size)
             else:
                 data = np.zeros([batch_size, self.depth, self.height, self.width, self.channel], dtype=np.float32)
-                label = np.zeros([batch_size, self.depth, self.height, self.width, 1], dtype=np.float32)
+                #label = np.zeros([batch_size, self.depth, self.height, self.width, 1], dtype=np.float32)
+                label = self.__alloc_label3D(batch_size)
             for i in xrange(len(data_files_batch[i_batch])):
                 d = np.fromfile(data_files_batch[i_batch][i], dtype=self.dtype).astype(np.float32)
                 l = np.fromfile(label_files_batch[i_batch][i], dtype=self.dtype).astype(np.float32)
                 if self.dimension==2:
                     d.shape = [1, self.height, self.width, self.channel]
-                    l.shape = [1, self.height, self.width, 1]
+                    #l.shape = [1, self.height, self.width, 1]
+                    l = self.__resize_label2D(l)
                 else:
                     d.shape = [1, self.depth, self.height, self.width, self.channel]
-                    l.shape = [1, self.depth, self.height, self.width, 1]
+                    #l.shape = [1, self.depth, self.height, self.width, 1]
+                    l = self.__resize_label3D(l)
                 data[i,:] = d
                 label[i,:] = l
         i_batch = (i_batch+1)%n_batch
         return data, label, i_batch
+
+    def __alloc_label2D(self, batch_size, size=None):
+        if self.label_type == 'binary':
+            label = np.zeros([batch_size, 1, 1, 1], dtype=np.float32)
+        elif self.label_type == 'array':
+            label = np.zeros([batch_size, 1, 1, self.label_len], dtype=np.float32)
+        else:
+            if size is None:
+                label = np.zeros([batch_size, self.height, self.width, 1], dtype=np.float32)
+            else:
+                label = np.zeros([batch_size, size[0], size[1], 1], dtype=np.float32)
+        return label
+
+    def __alloc_label3D(self, batch_size, size=None):
+        if self.label_type == 'binary':
+            label = np.zeros([batch_size, 1, 1, 1, 1], dtype=np.float32)
+        elif self.label_type == 'array':
+            label = np.zeros([batch_size, 1, 1, 1, self.label_len], dtype=np.float32)
+        else:
+            if size is None:
+                label = np.zeros([batch_size, self.depth, self.height, self.width, 1], dtype=np.float32)
+            else:
+                label = np.zeros([batch_size, size[0], size[1], size[2], 1], dtype=np.float32)
+        return label
+
+    def __resize_label2D(self, label, size=None):
+        if self.label_type == 'binary':
+            label.shape = [1,1,1,1]
+        elif self.label_type == 'array':
+            label.shape = [1,1,1, self.label_len]
+        else:
+            if size is None:
+                label.shape = [1, self.height, self.width, 1]
+            else:
+                label.shape = [1, size[0], size[1], 1]
+        return label
+
+    def __resize_label3D(self, label, size=None):
+        if self.label_type == 'binary':
+            label.shape = [1,1,1,1,1]
+        elif self.label_type == 'array':
+            label.shape = [1,1,1,1, self.label_len]
+        else:
+            if size is None:
+                label.shape = [1, self.depth, self.height, self.width, 1]
+            else:
+                label.shape = [1, size[0], size[1], size[2], 1]
+        return label

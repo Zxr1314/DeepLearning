@@ -55,6 +55,15 @@ class Solver2D(Solver):
             self.aug = solver_params['aug']
         else:
             self.aug = None
+        if 'label_type' in common_params:
+            self.label_type = common_params['label_type']
+        else:
+            self.label_type = 'matrix'
+        if self.label_type == 'array':
+            if 'label_len' in common_params:
+                self.label_len = common_params['label_len']
+            else:
+                raise Exception('Label type is array while not given label length!')
 
         self.dataset = dataset
         self.net = net
@@ -80,7 +89,12 @@ class Solver2D(Solver):
     def construct_graph(self):
         self.global_step = tf.Variable(0, trainable=False)
         self.images = tf.placeholder(tf.float32, [None, self.height, self.width, self.channel])
-        self.labels = tf.placeholder(tf.float32, [None, self.height, self.width, self.channel])
+        if self.label_type == 'binary':
+            self.labels = tf.placeholder(tf.float32, [None, 1, 1, 1])
+        elif self.label_type == 'array':
+            self.labels = tf.placeholder(tf.float32, [None, 1, 1, self.label_len])
+        else:
+            self.labels = tf.placeholder(tf.float32, [None, self.height, self.width, self.channel])
         self.lr = tf.placeholder(tf.float32)
         self.keep_prob_holder = tf.placeholder(tf.float32)
         self.net_input['keep_prob'] = self.keep_prob_holder

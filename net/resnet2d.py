@@ -141,9 +141,10 @@ class ResNet2D(Net):
             output['res_empty4_' + str(i)] = res
         res = tf.nn.relu(res['out'])
         output['relu4'] = res
-        '''conv = self.conv2d(self.name+'dense', res, [64,64,int(res.get_shape()[3]),1], padding='VALID', pretrain=pretrain, train=training, use_bias=True)
+        conv = self.conv2d(self.name+'dense', res, [64,64,int(res.get_shape()[3]),1], padding='VALID', pretrain=pretrain, train=training, use_bias=True)
+        self.last_conv = conv
         out = tf.nn.sigmoid(conv, name=self.name+'sigm')
-        output['out'] = out'''
+        output['out'] = out
         return output
 
 class ResNet2D2(ResNet2D):
@@ -210,9 +211,10 @@ class ResNet2D2(ResNet2D):
             output['res_empty4_' + str(i)] = res
         res = tf.nn.relu(res['out'])
         output['relu4'] = res
-        '''conv = self.conv2d(self.name+'dense', res, [64,64,int(res.get_shape()[3]),1], padding='VALID', pretrain=pretrain, train=training, use_bias=True)
+        conv = self.conv2d(self.name+'dense', res, [64,64,int(res.get_shape()[3]),1], padding='VALID', pretrain=pretrain, train=training, use_bias=True)
+        self.last_conv = conv
         out = tf.nn.sigmoid(conv, name=self.name+'sigm')
-        output['out'] = out'''
+        output['out'] = out
         return output
 
 class ResNet2D3(ResNet2D):
@@ -282,4 +284,74 @@ class ResNet2D3(ResNet2D):
         '''conv = self.conv2d(self.name+'dense', res, [64,64,int(res.get_shape()[3]),1], padding='VALID', pretrain=pretrain, train=training, use_bias=True)
         out = tf.nn.sigmoid(conv, name=self.name+'sigm')
         output['out'] = out'''
+        return output
+
+class ResNet2D4(ResNet2D):
+    def __init__(self, common_params, net_params, name=None):
+        super(ResNet2D4, self).__init__(common_params, net_params, name)
+        return
+
+    def inference(self, images, **kwargs):
+        output = {}
+        input_channel = int(images.get_shape()[3])
+        if 'training' in  kwargs:
+            training = kwargs['training']
+        else:
+            training = True
+        if 'pretrain' in  kwargs:
+            pretrain = kwargs['pretrain']
+        else:
+            pretrain = False
+        conv1 = self.conv2d(self.name+'conv1', images, [3,3,input_channel,64], stride=[1,2,2,1], use_bias=False, pretrain=pretrain, train=training)
+        output['conv1'] = conv1
+        relu1 = tf.nn.relu(conv1, name=self.name+'relu1')
+        output['relu1'] = relu1
+        conv2 = self.conv2d(self.name+'conv2', relu1, [3,3,64,64], use_bias=False, pretrain=pretrain, train=training)
+        output['conv2'] = conv2
+        relu2 = tf.nn.relu(conv2, name=self.name+'relu2')
+        output['relu2'] = relu2
+        conv3 = self.conv2d(self.name+'conv3', relu2, [3,3,64,128], stride=[1,2,2,1], use_bias=False, pretrain=pretrain, train=training)
+        output['conv3'] = conv3
+        relu3 = tf.nn.relu(conv3, name=self.name+'relu3')
+        output['relu3'] = relu3
+        pool1 = tf.nn.max_pool(relu3, [1,3,3,1], strides=[1,2,2,1], padding='SAME', name=self.name+'maxpool')
+        output['pool1'] = pool1
+        # 2_1-2_3
+        res = self.residual_short(pool1, 1, pad=1, lvl=2, sub_lvl=1, pretrain=pretrain, training=training, name=self.name+'res_short1')
+        output['res_short1'] = res
+        for i in range(2):
+            res = self.residual_empty(res['out'], 1, pad=1, lvl=2, sub_lvl=i+2, pretrain=pretrain, training=training, name=self.name+'res_empty1_'+str(i))
+            output['res_empty1_' + str(i)] = res
+        # 3_1-3_3
+        res = self.residual_short(res['out'], 2, pad=2, lvl=3, sub_lvl=1, pretrain=pretrain, training=training, name=self.name+'res_short2', modify_stride=True)
+        output['res_short2'] = res
+        for i in range(3):
+            res = self.residual_empty(res['out'], 2, pad=1, lvl=3, sub_lvl=i+2, pretrain=pretrain, training=training, name=self.name+'res_empty2_'+str(i))
+            output['res_empty2_'+str(i)] = res
+        if self.layers is 50:
+            res = self.residual_short(res['out'], 4, pad=2, lvl=4, sub_lvl=1, pretrain=pretrain, training=training, name=self.name+'res_short3')
+            output['res_short3'] = res
+            for i in xrange(5):
+                res = self.residual_empty(res['out'], 4, pad=2, lvl=4, sub_lvl=i+2, pretrain=pretrain, training=training, name=self.name+'res_empty3_'+str(i))
+                output['res_empty3_' + str(i)] = res
+        elif self.layers is 101:
+            res = self.residual_short(res['out'], 4, pad=2, lvl=4, sub_lvl=1, pretrain=pretrain, training=training, name=self.name+'res_short3')['out']
+            output['res_short3'] = res
+            for i in xrange(22):
+                res = self.residual_empty(res['out'], 4, pad=2, lvl=4, sub_lvl=i + 2, pretrain=pretrain, training=training, name=self.name+'res_empty3_'+str(i))
+                output['res_empty3_' + str(i)] = res
+        else:
+            raise NotImplementedError
+        # 5_1-5_3
+        res = self.residual_short(res['out'], 8, pad=4, lvl=5, sub_lvl=1, pretrain=pretrain, training=training, name=self.name+'res_short4')
+        output['res_short4'] = res
+        for i in xrange(2):
+            res = self.residual_empty(res['out'], 8, pad=4, lvl=5, sub_lvl=i+2, pretrain=pretrain, training=training, name=self.name+'res_empty4_'+str(i))
+            output['res_empty4_' + str(i)] = res
+        res = tf.nn.relu(res['out'])
+        output['relu4'] = res
+        conv = self.conv2d(self.name+'dense', res, [32,32,int(res.get_shape()[3]),1], padding='VALID', pretrain=pretrain, train=training, use_bias=True)
+        self.last_conv = conv
+        out = tf.nn.sigmoid(conv, name=self.name+'sigm')
+        output['out'] = out
         return output
