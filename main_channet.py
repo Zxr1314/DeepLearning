@@ -72,7 +72,7 @@ solver_params['train_dir'] = 'models'
 #solver_params['model_name'] = 'selu'
 #solver_params['model_name'] = 'swish'
 solver_params['model_name'] = 'channet'
-#solver_params['pretrain_model_path'] = 'models/channet4.cpkt-30000'
+solver_params['pretrain_model_path'] = 'models/descchan.cpkt-30000'
 solver_params['max_iterators'] = 30000
 learning_rate = np.zeros(30000, dtype=np.float32)
 learning_rate[0:10000] = 0.001
@@ -114,19 +114,19 @@ dataset = FDataSet(common_params, dataset_params)
 #net = Unet2D(common_params, net_params)
 #net = UnetLReLU2D(common_params, net_params)
 #net = UnetSeLU2D(common_params, net_params)
-net = ChanNet2D(common_params, net_params, name='channet')
+net = ChanNet2D(common_params, net_params, name='descchan')
 #net = PSPnet2DCombine(common_params, net_params)
 #solver = CombineSolver2D(dataset, net, common_params, solver_params)
 solver = Solver2D(dataset, net, common_params, solver_params)
 solver.initialize()
-solver.solve()
+#solver.solve()
 test_file(solver, '/media/E/Documents/VesselData/TrainData/0005/oridata.dat','/media/E/Documents/VesselData/TrainLabel/0005/orilabel.dat',
-          '/media/E/Documents/VesselData/TrainLabel/0005/channet4_30000.dat')
+          '/media/E/Documents/VesselData/TrainLabel/0005/descchan_30000.dat')
 test_file(solver, '/media/E/Documents/VesselData/TrainData/0049/oridata.dat','/media/E/Documents/VesselData/TrainLabel/0049/orilabel.dat',
-          '/media/E/Documents/VesselData/TrainLabel/0049/channet4_30000.dat')
+          '/media/E/Documents/VesselData/TrainLabel/0049/descchan_30000.dat')
 test_file(solver, '/media/E/Documents/VesselData/TrainData/0322/oridata.dat','/media/E/Documents/VesselData/TrainLabel/0322/orilabel.dat',
-          '/media/E/Documents/VesselData/TrainLabel/0322/channet4_30000.dat')
+          '/media/E/Documents/VesselData/TrainLabel/0322/descchan_30000.dat')
 test_file(solver, '/media/E/Documents/VesselData/TrainData/1008/oridata.dat','/media/E/Documents/VesselData/TrainLabel/1008/orilabel.dat',
-          '/media/E/Documents/VesselData/TrainLabel/1008/channet4_30000.dat')
+          '/media/E/Documents/VesselData/TrainLabel/1008/descchan_30000.dat')
 test_file(solver, '/media/E/Documents/VesselData/TrainData/1015/oridata.dat','/media/E/Documents/VesselData/TrainLabel/1015/orilabel.dat',
-          '/media/E/Documents/VesselData/TrainLabel/1015/channet4_30000.dat')
+          '/media/E/Documents/VesselData/TrainLabel/1015/descchan_30000.dat')

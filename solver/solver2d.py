@@ -152,7 +152,7 @@ class Solver2D(Solver):
                 summary_str = self.sess.run(summary_op, feed_dict={self.images: np_images, self.labels: np_labels, self.keep_prob_holder: self.keep_prob})
                 train_writer.add_summary(summary_str, step)
                 t_images, t_labels = self.dataset.test_random_batch()
-                test_summary = self.sess.run(summary_op, feed_dict={self.images:t_images, self.labels: t_labels, self.keep_prob_holder: 1.0})
+                test_summary = self.sess.run([summary_op], feed_dict={self.images:t_images, self.labels: t_labels, self.keep_prob_holder: 1.0})
                 test_writer.add_summary(test_summary, step)
                 if self.do_plot:
                     self.plot.plot_train(step, loss, 0)
@@ -216,7 +216,12 @@ class Solver2D(Solver):
         elif len(input.shape) == 3:
             input.shape = [int(input.shape[0]/self.channel), input.shape[1], input.shape[2], self.channel]
         i = 0
-        predict = np.zeros(input.shape)
+        if self.label_type == 'binary':
+            predict = np.zeros([input.shape[0], 1, 1, 1], dtype=np.float32)
+        elif self.label_type == 'array':
+            predict = np.zeros([input.shape[0], 1, 1, self.label_len], dtype=np.float32)
+        else:
+            predict = np.zeros(input.shape, dtype=np.float32)
         while i < input.shape[0]:
             images = input[i:i+self.test_batch_size,:,:,:]
             if self.aug is not None:

@@ -14,35 +14,14 @@ from solver.solver2d import Solver2D
 from utils.augmentation import *
 from solver.combinesolver2d import CombineSolver2D
 
-def test_file(solve, file_name, label_name, save_name):
+def test_file(solve, file_name):
     data = np.fromfile(file_name, dtype=np.float32)
-    label = np.fromfile(label_name, dtype=np.float32)
-    nz = label.shape[0]/512/512
-    label.shape = [nz, 512, 512]
-    startz = 0
-    endz = 0
-    bFind = False
-    for i in range(nz):
-        if np.sum(label[i,:,:]) != 0:
-            if not bFind:
-                bFind = True
-                startz = i
-            endz = i
-    stime = time.time()
+    start = time.time()
     predict = solve.forward(data)
-    duration = time.time()-stime
-    predict.shape = [nz,512,512]
-    seg = (predict>0.5).astype(np.float32)
-    TP = np.sum(seg[startz:endz,:,:]*label[startz:endz,:,:]).astype(np.float32)
-    FP = np.sum((1-seg[startz:endz,:,:])*label[startz:endz,:,:]).astype(np.float32)
-    FN = np.sum((1-label[startz:endz,:,:])*seg[startz:endz,:,:]).astype(np.float32)
-    precision = TP / (TP + FP)
-    recall = TP / (TP + FN)
-    IoU = TP/(TP+FP+FN)
-    dice = 2 * TP / (2 * TP + FP + FN)
-    print('testing cost %f seconds.\n\tprecision=%f, recall=%f, iou=%f, dice=%f'%(duration, precision, recall, IoU, dice))
-    predict = predict.astype(np.float32)
-    predict.tofile(save_name)
+    duration = time.time()-start
+    predict.shape = [data.shape[0]]
+    print('testing cost %f seconds.'%(duration))
+    print predict
     return predict
 
 common_params = {}
@@ -65,9 +44,9 @@ dataset_params['test_label_path'] = '/media/E/Documents/VesselData/TrainLabel/te
 
 
 net_params = {}
-net_params['weight_true'] = -2
-net_params['weight_false'] = 3
-net_params['layers'] = 50
+net_params['weight_true'] = 0
+net_params['weight_false'] = 1
+net_params['layers'] = 101
 solver_params = {}
 solver_params['train_dir'] = 'models'
 #solver_params['model_name'] = 'relu'
@@ -75,7 +54,7 @@ solver_params['train_dir'] = 'models'
 #solver_params['model_name'] = 'selu'
 #solver_params['model_name'] = 'swish'
 solver_params['model_name'] = 'binres'
-#solver_params['pretrain_model_path'] = 'models/channet4.cpkt-30000'
+#solver_params['pretrain_model_path'] = 'models/binres.cpkt-30000'
 solver_params['max_iterators'] = 30000
 learning_rate = np.zeros(30000, dtype=np.float32)
 learning_rate[0:10000] = 0.001
@@ -121,3 +100,8 @@ net = ResNet2D4(common_params, net_params, name='binres')
 solver = Solver2D(dataset, net, common_params, solver_params)
 solver.initialize()
 solver.solve()
+predict1 = test_file(solver, '/media/E/Documents/VesselData/TrainData/0015/oridata.dat')
+predict2 = test_file(solver, '/media/E/Documents/VesselData/TrainData/0049/oridata.dat')
+predict3 = test_file(solver, '/media/E/Documents/VesselData/TrainData/0322/oridata.dat')
+predict4 = test_file(solver, '/media/E/Documents/VesselData/TrainData/1008/oridata.dat')
+predict5 = test_file(solver, '/media/E/Documents/VesselData/TrainData/1015/oridata.dat')

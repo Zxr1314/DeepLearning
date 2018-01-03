@@ -211,10 +211,10 @@ class ResNet2D2(ResNet2D):
             output['res_empty4_' + str(i)] = res
         res = tf.nn.relu(res['out'])
         output['relu4'] = res
-        conv = self.conv2d(self.name+'dense', res, [64,64,int(res.get_shape()[3]),1], padding='VALID', pretrain=pretrain, train=training, use_bias=True)
+        '''conv = self.conv2d(self.name+'dense', res, [64,64,int(res.get_shape()[3]),1], padding='VALID', pretrain=pretrain, train=training, use_bias=True)
         self.last_conv = conv
         out = tf.nn.sigmoid(conv, name=self.name+'sigm')
-        output['out'] = out
+        output['out'] = out'''
         return output
 
 class ResNet2D3(ResNet2D):
@@ -335,10 +335,12 @@ class ResNet2D4(ResNet2D):
                 res = self.residual_empty(res['out'], 4, pad=2, lvl=4, sub_lvl=i+2, pretrain=pretrain, training=training, name=self.name+'res_empty3_'+str(i))
                 output['res_empty3_' + str(i)] = res
         elif self.layers is 101:
-            res = self.residual_short(res['out'], 4, pad=2, lvl=4, sub_lvl=1, pretrain=pretrain, training=training, name=self.name+'res_short3')['out']
+            res = self.residual_short(res['out'], 4, pad=2, lvl=4, sub_lvl=1, pretrain=pretrain, training=training,
+                                      name=self.name + 'res_short3')
             output['res_short3'] = res
             for i in xrange(22):
-                res = self.residual_empty(res['out'], 4, pad=2, lvl=4, sub_lvl=i + 2, pretrain=pretrain, training=training, name=self.name+'res_empty3_'+str(i))
+                res = self.residual_empty(res['out'], 4, pad=2, lvl=4, sub_lvl=i + 2, pretrain=pretrain,
+                                          training=training, name=self.name + 'res_empty3_' + str(i))
                 output['res_empty3_' + str(i)] = res
         else:
             raise NotImplementedError
