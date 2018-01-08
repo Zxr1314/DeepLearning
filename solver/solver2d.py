@@ -152,7 +152,7 @@ class Solver2D(Solver):
                 summary_str = self.sess.run(summary_op, feed_dict={self.images: np_images, self.labels: np_labels, self.keep_prob_holder: self.keep_prob})
                 train_writer.add_summary(summary_str, step)
                 t_images, t_labels = self.dataset.test_random_batch()
-                test_summary = self.sess.run([summary_op], feed_dict={self.images:t_images, self.labels: t_labels, self.keep_prob_holder: 1.0})
+                test_summary = self.sess.run(summary_op, feed_dict={self.images:t_images, self.labels: t_labels, self.keep_prob_holder: 1.0})
                 test_writer.add_summary(test_summary, step)
                 if self.do_plot:
                     self.plot.plot_train(step, loss, 0)

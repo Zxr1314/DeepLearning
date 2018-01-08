@@ -6,12 +6,11 @@ import time
 import numpy as np
 
 from dataset.fdataset import FDataSet
-from net.unet2d import *
 from net.pspnet2d import *
 from net.channet2d import *
+from net.sumnet2d import *
 from solver.solver2d import Solver2D
 from utils.augmentation import *
-from solver.combinesolver2d import CombineSolver2D
 
 def test_file(solve, file_name, label_name, save_name):
     data = np.fromfile(file_name, dtype=np.float32)
@@ -72,7 +71,7 @@ dataset_params['test_data_path'] = '/media/E/Documents/VesselData/TrainData/test
 dataset_params['test_label_path'] = '/media/E/Documents/VesselData/TrainLabel/testarc2D'
 
 net_params = {}
-net_params['weight_true'] = 2
+net_params['weight_true'] = 9
 net_params['weight_false'] = 1
 net_params['layers'] = 50
 solver_params = {}
@@ -81,8 +80,8 @@ solver_params['train_dir'] = 'models'
 #solver_params['model_name'] = 'lrelu'
 #solver_params['model_name'] = 'selu'
 #solver_params['model_name'] = 'swish'
-solver_params['model_name'] = 'channet'
-solver_params['pretrain_model_path'] = 'models/channet4.cpkt-30000'
+solver_params['model_name'] = 'sumnet'
+#solver_params['pretrain_model_path'] = 'models/channet4.cpkt-30000'
 solver_params['max_iterators'] = 30000
 learning_rate = np.zeros(30000, dtype=np.float32)
 learning_rate[0:10000] = 0.001
@@ -97,8 +96,6 @@ eval_names.append('accuracy')
 eval_names.append('precision')
 eval_names.append('recall')
 eval_names.append('dice')
-eval_names.append('area')
-eval_names.append('edge')
 solver_params['eval_names'] = eval_names
 plot_params = {}
 plot_params['max_iterations'] = solver_params['max_iterators']
@@ -106,7 +103,7 @@ plot_params['eval_names'] = eval_names
 #plot_params['save_name'] = 'output/relu.png'
 #plot_params['save_name'] = 'output/lrelu.png'
 #plot_params['save_name'] = 'output/selu.png'
-plot_params['save_name'] = 'output/channet.png'
+plot_params['save_name'] = 'output/sumnet.png'
 plot_params['interactive'] = True
 plot_params['loss_max'] = 5.0
 solver_params['plot'] = True
@@ -114,8 +111,7 @@ solver_params['plot_params'] = plot_params
 solver_params['keep_prob'] = 0.5
 net_input = {}
 net_input['training'] = True
-net_input['former_train'] = True
-net_input['pretrain'] = True
+net_input['pretrain'] = False
 aug = Augmentations('scaling', div=1024, bias=-1)
 solver_params['aug'] = aug
 solver_params['net_input'] = net_input
@@ -124,12 +120,12 @@ dataset = FDataSet(common_params, dataset_params)
 #net = Unet2D(common_params, net_params)
 #net = UnetLReLU2D(common_params, net_params)
 #net = UnetSeLU2D(common_params, net_params)
-net = ChanNet2D(common_params, net_params, name='channet')
+net = SumNet2D(common_params, net_params)
 #net = PSPnet2DCombine(common_params, net_params)
 #solver = CombineSolver2D(dataset, net, common_params, solver_params)
 solver = Solver2D(dataset, net, common_params, solver_params)
 solver.initialize()
-#solver.solve()
+solver.solve()
 '''test_file(solver, '/media/E/Documents/VesselData/TrainData/0005/oridata.dat','/media/E/Documents/VesselData/TrainLabel/0005/orilabel.dat',
           '/media/E/Documents/VesselData/TrainLabel/0005/descchan_30000.dat')
 test_file(solver, '/media/E/Documents/VesselData/TrainData/0049/oridata.dat','/media/E/Documents/VesselData/TrainLabel/0049/orilabel.dat',
@@ -141,6 +137,6 @@ test_file(solver, '/media/E/Documents/VesselData/TrainData/1008/oridata.dat','/m
 test_file(solver, '/media/E/Documents/VesselData/TrainData/1015/oridata.dat','/media/E/Documents/VesselData/TrainLabel/1015/orilabel.dat',
           '/media/E/Documents/VesselData/TrainLabel/1015/descchan_30000.dat')'''
 
-for i in range(26):
+'''for i in range(26):
     forward_file(solver, '/media/E/Documents/VesselData/testData/pre/' + str(i + 1) + '.dat',
-                 '/media/E/Documents/VesselData/testData/channet_30000/' + str(i + 1) + '.dat')
+                 '/media/E/Documents/VesselData/testData/channet_30000/' + str(i + 1) + '.dat')'''
