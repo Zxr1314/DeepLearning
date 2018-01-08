@@ -14,8 +14,8 @@ from net.net import Net
 import copy
 
 class SumNet2D(Net):
-    def __init__(self, common_params, net_params):
-        super(SumNet2D, self).__init__(common_params, net_params)
+    def __init__(self, common_params, net_params, name=None):
+        super(SumNet2D, self).__init__(common_params, net_params, name)
         if 'threshold' in net_params:
             self.threshold = net_params['threshold']
         else:
